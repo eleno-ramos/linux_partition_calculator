@@ -1,4 +1,3 @@
-// Distribution configurations and partition recommendations
 export interface DistributionConfig {
   id: string;
   name: string;
@@ -27,29 +26,146 @@ export interface PartitionRecommendation {
   swap: number;
   home: number;
   total: number;
+  systemPercentage?: number;
+  otherPartitions?: number;
 }
+
+export type FirmwareType = "bios" | "uefi" | "gpt" | "mbr";
+export type DiskType = "hdd" | "ssd";
+export type PartitionMode = "optimized" | "custom";
+
+export interface FirmwareConfig {
+  id: FirmwareType;
+  name: string;
+  description: string;
+  requiresEFI: boolean;
+  partitionTable: "MBR" | "GPT";
+  maxPartitions: number;
+  notes: string[];
+}
+
+export interface DiskConfig {
+  id: DiskType;
+  name: string;
+  description: string;
+  recommendations: string[];
+  alignmentSize: number; // in MB
+  performanceTips: string[];
+}
+
+export interface CustomPartition {
+  name: string;
+  mountPoint: string;
+  sizeGB: number;
+  filesystem: string;
+  priority: number; // 1-10, higher = more important
+}
+
+export const FIRMWARE_TYPES: Record<FirmwareType, FirmwareConfig> = {
+  bios: {
+    id: "bios",
+    name: "BIOS (MBR)",
+    description: "Legacy BIOS com tabela de partições MBR",
+    requiresEFI: false,
+    partitionTable: "MBR",
+    maxPartitions: 4,
+    notes: [
+      "Máximo de 4 partições primárias",
+      "Suporta discos até 2TB",
+      "Compatível com sistemas antigos",
+      "Sem suporte a boot seguro",
+    ],
+  },
+  uefi: {
+    id: "uefi",
+    name: "UEFI (GPT)",
+    description: "UEFI moderno com tabela de partições GPT",
+    requiresEFI: true,
+    partitionTable: "GPT",
+    maxPartitions: 128,
+    notes: [
+      "Suporta discos maiores que 2TB",
+      "Requer partição EFI",
+      "Suporta Secure Boot",
+      "Recomendado para sistemas modernos",
+    ],
+  },
+  gpt: {
+    id: "gpt",
+    name: "GPT (Sem UEFI)",
+    description: "GPT com BIOS legado",
+    requiresEFI: false,
+    partitionTable: "GPT",
+    maxPartitions: 128,
+    notes: [
+      "Combina GPT com BIOS legado",
+      "Suporta discos maiores que 2TB",
+      "Compatível com sistemas antigos",
+      "Requer partição de boot dedicada",
+    ],
+  },
+  mbr: {
+    id: "mbr",
+    name: "MBR (Legado)",
+    description: "Tabela de partições MBR tradicional",
+    requiresEFI: false,
+    partitionTable: "MBR",
+    maxPartitions: 4,
+    notes: [
+      "Compatível com qualquer BIOS",
+      "Máximo de 4 partições primárias",
+      "Suporta discos até 2TB",
+      "Sem suporte a Secure Boot",
+    ],
+  },
+};
+
+export const DISK_TYPES: Record<DiskType, DiskConfig> = {
+  ssd: {
+    id: "ssd",
+    name: "Disco Sólido (SSD)",
+    description: "Unidade de estado sólido sem partes móveis",
+    recommendations: [
+      "Ative TRIM para otimização",
+      "Use noatime em /home",
+      "Considere usar btrfs",
+    ],
+    alignmentSize: 4,
+    performanceTips: [
+      "Ative fstrim.timer para limpeza automática",
+      "Use noatime em /home",
+      "Considere usar btrfs para snapshots",
+      "Monitore SMART para vida útil do SSD",
+    ],
+  },
+  hdd: {
+    id: "hdd",
+    name: "Disco Rígido (HDD)",
+    description: "Disco rígido mecânico tradicional",
+    recommendations: [
+      "Use ext4 para melhor compatibilidade",
+      "Deixe mais espaço livre (~15%)",
+      "Desfragmente periodicamente",
+    ],
+    alignmentSize: 4,
+    performanceTips: [
+      "Use ext4 para máxima compatibilidade",
+      "Deixe espaço livre para evitar fragmentação",
+      "Considere usar noatime para reduzir I/O",
+      "Monitore SMART para detectar falhas",
+    ],
+  },
+};
 
 export const DISTRIBUTIONS: Record<string, DistributionConfig> = {
   ubuntu: {
     id: "ubuntu",
     name: "Ubuntu",
-    description: "Distribuição baseada em Debian, fácil de usar",
+    description: "Distribuição popular, fácil de usar",
     filesystem: "ext4",
     bootSize: 0.5,
-    minRootSize: 30,
-    recommendedRootSize: 50,
-    supportsSwap: true,
-    defaultSwapMultiplier: 1,
-    efiRequired: true,
-  },
-  mint: {
-    id: "mint",
-    name: "Linux Mint",
-    description: "Baseada em Ubuntu, interface amigável",
-    filesystem: "ext4",
-    bootSize: 0.5,
-    minRootSize: 30,
-    recommendedRootSize: 50,
+    minRootSize: 20,
+    recommendedRootSize: 40,
     supportsSwap: true,
     defaultSwapMultiplier: 1,
     efiRequired: true,
@@ -57,13 +173,13 @@ export const DISTRIBUTIONS: Record<string, DistributionConfig> = {
   fedora: {
     id: "fedora",
     name: "Fedora",
-    description: "Distribuição moderna com tecnologias recentes",
-    filesystem: "btrfs",
+    description: "Cutting-edge, atualizado frequentemente",
+    filesystem: "ext4",
     bootSize: 1,
-    minRootSize: 40,
-    recommendedRootSize: 60,
-    supportsSwap: false, // Uses zram by default
-    defaultSwapMultiplier: 0,
+    minRootSize: 25,
+    recommendedRootSize: 45,
+    supportsSwap: true,
+    defaultSwapMultiplier: 1,
     efiRequired: true,
   },
   debian: {
@@ -74,6 +190,18 @@ export const DISTRIBUTIONS: Record<string, DistributionConfig> = {
     bootSize: 0.5,
     minRootSize: 25,
     recommendedRootSize: 45,
+    supportsSwap: true,
+    defaultSwapMultiplier: 1,
+    efiRequired: true,
+  },
+  mint: {
+    id: "mint",
+    name: "Linux Mint",
+    description: "Baseada em Ubuntu, interface amigável",
+    filesystem: "ext4",
+    bootSize: 0.5,
+    minRootSize: 20,
+    recommendedRootSize: 40,
     supportsSwap: true,
     defaultSwapMultiplier: 1,
     efiRequired: true,
@@ -169,24 +297,14 @@ export function calculateSwapSize(
   const distro = DISTRIBUTIONS[distroId];
 
   if (!distro.supportsSwap) {
-    return 0; // Fedora uses zram
+    return 0;
   }
 
   if (hibernation) {
-    // Hibernation requires swap >= RAM
-    if (ramGB <= 2) {
-      return ramGB * 3;
-    } else if (ramGB <= 8) {
-      return ramGB * 2;
-    } else if (ramGB <= 64) {
-      return Math.max(ramGB * 1.5, 4);
-    } else {
-      return 0; // Not recommended for very large RAM
-    }
+    return Math.max(ramGB, 2);
   } else {
-    // Without hibernation
     if (ramGB <= 2) {
-      return ramGB * 2;
+      return Math.max(ramGB * 2, 2);
     } else if (ramGB <= 8) {
       return ramGB;
     } else {
@@ -200,17 +318,25 @@ export function calculatePartitions(
   ramGB: number,
   distroId: string,
   hibernation: boolean,
-  useMinimum: boolean = false
+  useMinimum: boolean = false,
+  systemPercentage: number = 20
 ): PartitionRecommendation {
   const distro = DISTRIBUTIONS[distroId];
 
-  const efiSize = 0.5; // Always 512MB for EFI
+  // Clamp system percentage between 10% and 80%
+  const clampedSystemPercentage = Math.max(10, Math.min(80, systemPercentage));
+  const systemDiskGB = (totalDiskGB * clampedSystemPercentage) / 100;
+
+  const efiSize = 0.5;
   const bootSize = distro.bootSize;
   const swapSize = calculateSwapSize(ramGB, hibernation, distroId);
 
   const rootSize = useMinimum
-    ? distro.minRootSize
-    : Math.min(distro.recommendedRootSize, totalDiskGB * 0.2);
+    ? Math.min(distro.minRootSize, systemDiskGB - efiSize - bootSize - swapSize)
+    : Math.min(
+        distro.recommendedRootSize,
+        systemDiskGB - efiSize - bootSize - swapSize
+      );
 
   const usedSize = efiSize + bootSize + swapSize + rootSize;
   const homeSize = Math.max(0, totalDiskGB - usedSize);
@@ -222,6 +348,8 @@ export function calculatePartitions(
     swap: swapSize,
     home: homeSize,
     total: totalDiskGB,
+    systemPercentage: clampedSystemPercentage,
+    otherPartitions: homeSize,
   };
 }
 
@@ -233,7 +361,6 @@ export function generateKickstartXML(
 ): string {
   const distro = DISTRIBUTIONS[distroId];
 
-  // Kickstart format for Fedora/CentOS/RHEL
   if (["fedora", "centos"].includes(distroId)) {
     return `<?xml version="1.0" encoding="UTF-8"?>
 <!-- Kickstart configuration for ${distro.name} -->
@@ -249,161 +376,215 @@ export function generateKickstartXML(
   
   <!-- Partitioning -->
   <partitioning>
-    <clearpart type="all"/>
-    <autopart type="lvm"/>
-    
-    <!-- EFI Partition -->
     <partition>
       <mount>/boot/efi</mount>
       <size>${partitions.efi * 1024}</size>
       <fstype>efi</fstype>
     </partition>
-    
-    <!-- Boot Partition -->
     <partition>
       <mount>/boot</mount>
       <size>${partitions.boot * 1024}</size>
       <fstype>${distro.filesystem}</fstype>
     </partition>
-    
-    <!-- Root Partition -->
     <partition>
       <mount>/</mount>
       <size>${partitions.root * 1024}</size>
       <fstype>${distro.filesystem}</fstype>
     </partition>
-    
-    <!-- Swap -->
-    ${
-      partitions.swap > 0
-        ? `<partition>
+    <partition>
       <mount>swap</mount>
       <size>${partitions.swap * 1024}</size>
       <fstype>swap</fstype>
-    </partition>`
-        : ""
-    }
-    
-    <!-- Home Partition -->
+    </partition>
     <partition>
       <mount>/home</mount>
       <size>${partitions.home * 1024}</size>
       <fstype>${distro.filesystem}</fstype>
     </partition>
   </partitioning>
-  
-  <!-- Installation Options -->
-  <install>
-    <text/>
-    <network --onboot yes --bootproto dhcp --noipv6/>
-  </install>
-  
 </kickstart>`;
   }
 
-  // Preseed format for Debian/Ubuntu/Linux Mint
-  return `# Preseed configuration for ${distro.name}
-# Generated by Linux Partition Calculator
-
-# Localization
-d-i debian-installer/locale string en_US.UTF-8
-d-i debian-installer/language string en
-d-i debian-installer/country string US
-d-i debian-installer/keymap select us
-
-# Network configuration
-d-i netcfg/choose_interface select auto
-d-i netcfg/get_hostname string ${hostname}
-d-i netcfg/get_domain string localdomain
-
-# Partitioning
-d-i partman-auto/method string regular
-d-i partman-auto/choose_recipe select atomic
-d-i partman-auto/disk string /dev/sda
-
-# Partition sizes (in MB)
-d-i partman-auto/expert_recipe string \\
-  boot-root :: \\
-    ${Math.round(partitions.efi * 1024)} 512 ${Math.round(partitions.efi * 1024)} fat32 \\
-      \$primary{ } \$bootable{ } method{ efi } format{ } . \\
-    ${Math.round(partitions.boot * 1024)} 512 ${Math.round(partitions.boot * 1024)} ${distro.filesystem} \\
-      \$primary{ } method{ format } format{ } use_filesystem{ } filesystem{ ${distro.filesystem} } mountpoint{ /boot } . \\
-    ${Math.round(partitions.root * 1024)} 512 ${Math.round(partitions.root * 1024)} ${distro.filesystem} \\
-      \$primary{ } method{ format } format{ } use_filesystem{ } filesystem{ ${distro.filesystem} } mountpoint{ / } . \\
-    ${
-      partitions.swap > 0
-        ? `${Math.round(partitions.swap * 1024)} 512 ${Math.round(partitions.swap * 1024)} linux-swap \\
-      method{ swap } format{ } . \\`
-        : ""
-    }
-    ${Math.round(partitions.home * 1024)} 512 -1 ${distro.filesystem} \\
-      method{ format } format{ } use_filesystem{ } filesystem{ ${distro.filesystem} } mountpoint{ /home } .
-
-# Timezone
-d-i time/zone string ${timezone}
-
-# Root password (change this!)
-d-i passwd/root-password password root
-d-i passwd/root-password-again password root
-
-# User account
-d-i passwd/user-fullname string Linux User
-d-i passwd/username string user
-d-i passwd/user-password password password
-d-i passwd/user-password-again password password
-
-# Apt setup
-d-i apt-setup/restricted boolean true
-d-i apt-setup/universe boolean true
-
-# Package selection
-tasksel tasksel/first multiselect standard
-d-i pkgsel/include string openssh-server build-essential
-
-# Grub bootloader
-d-i grub-installer/only_debian boolean true
-d-i grub-installer/with_other_os boolean true
-
-# Finish
-d-i finish-install/reboot_in_seconds integer 10
-`;
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<!-- Partition configuration for ${distro.name} -->
+<!-- Generated by Linux Partition Calculator -->
+<partitions>
+  <partition>
+    <mount>/boot/efi</mount>
+    <size>${partitions.efi}</size>
+    <unit>GB</unit>
+    <fstype>efi</fstype>
+  </partition>
+  <partition>
+    <mount>/boot</mount>
+    <size>${partitions.boot}</size>
+    <unit>GB</unit>
+    <fstype>${distro.filesystem}</fstype>
+  </partition>
+  <partition>
+    <mount>/</mount>
+    <size>${partitions.root}</size>
+    <unit>GB</unit>
+    <fstype>${distro.filesystem}</fstype>
+  </partition>
+  <partition>
+    <mount>swap</mount>
+    <size>${partitions.swap}</size>
+    <unit>GB</unit>
+    <fstype>swap</fstype>
+  </partition>
+  <partition>
+    <mount>/home</mount>
+    <size>${partitions.home}</size>
+    <unit>GB</unit>
+    <fstype>${distro.filesystem}</fstype>
+  </partition>
+</partitions>`;
 }
 
 export function generateUEFIBootScript(
   partitions: PartitionRecommendation
 ): string {
   return `#!/bin/bash
-# UEFI Boot Configuration Script
-# Generated by Linux Partition Calculator
+# UEFI Boot Script - Generated by Linux Partition Calculator
+# WARNING: This script will partition your disk. Use with caution!
 
-# Create partition table (GPT for UEFI)
-parted -s /dev/sda mklabel gpt
+set -e
+
+DISK="/dev/sda"  # Change this to your disk
+BOOT_SIZE="${partitions.boot * 1024}M"
+ROOT_SIZE="${partitions.root * 1024}M"
+SWAP_SIZE="${partitions.swap * 1024}M"
+
+echo "Creating UEFI partitions on $DISK..."
+
+# Create partition table
+sudo parted -s $DISK mklabel gpt
 
 # Create EFI partition
-parted -s /dev/sda mkpart primary fat32 1MiB ${partitions.efi + 1}GiB
-parted -s /dev/sda set 1 esp on
-mkfs.fat -F32 /dev/sda1
+sudo parted -s $DISK mkpart primary fat32 1MiB 513MiB
+sudo parted -s $DISK set 1 esp on
 
 # Create boot partition
-parted -s /dev/sda mkpart primary ext4 ${partitions.efi + 1}GiB ${partitions.efi + partitions.boot + 1}GiB
-mkfs.ext4 /dev/sda2
+sudo parted -s $DISK mkpart primary ext4 513MiB $((513 + ${partitions.boot * 1024}))MiB
 
 # Create root partition
-parted -s /dev/sda mkpart primary ext4 ${partitions.efi + partitions.boot + 1}GiB ${partitions.efi + partitions.boot + partitions.root + 1}GiB
-mkfs.ext4 /dev/sda3
+sudo parted -s $DISK mkpart primary ext4 $((513 + ${partitions.boot * 1024}))MiB $((513 + ${partitions.boot * 1024} + ${partitions.root * 1024}))MiB
 
-# Create swap partition (if needed)
-${
-  partitions.swap > 0
-    ? `parted -s /dev/sda mkpart primary linux-swap ${partitions.efi + partitions.boot + partitions.root + 1}GiB ${partitions.efi + partitions.boot + partitions.root + partitions.swap + 1}GiB
-mkswap /dev/sda4`
-    : ""
-}
+# Create swap partition
+sudo parted -s $DISK mkpart primary linux-swap $((513 + ${partitions.boot * 1024} + ${partitions.root * 1024}))MiB $((513 + ${partitions.boot * 1024} + ${partitions.root * 1024} + ${partitions.swap * 1024}))MiB
 
-# Create home partition
-parted -s /dev/sda mkpart primary ext4 ${partitions.efi + partitions.boot + partitions.root + partitions.swap + 1}GiB 100%
-mkfs.ext4 /dev/sda${partitions.swap > 0 ? "5" : "4"}
+# Create home partition (rest of disk)
+sudo parted -s $DISK mkpart primary ext4 $((513 + ${partitions.boot * 1024} + ${partitions.root * 1024} + ${partitions.swap * 1024}))MiB 100%
 
 echo "Partitions created successfully!"
-`;
+echo "Format partitions with: mkfs.fat -F32 /dev/sda1; mkfs.ext4 /dev/sda2; mkfs.ext4 /dev/sda3; mkswap /dev/sda4; mkfs.ext4 /dev/sda5"`;
+}
+
+export function generateMBRBootScript(
+  partitions: PartitionRecommendation
+): string {
+  return `#!/bin/bash
+# MBR Boot Script - Generated by Linux Partition Calculator
+# WARNING: This script will partition your disk. Use with caution!
+
+set -e
+
+DISK="/dev/sda"  # Change this to your disk
+
+echo "Creating MBR partitions on $DISK..."
+
+# Create partition table
+sudo parted -s $DISK mklabel msdos
+
+# Create boot partition
+sudo parted -s $DISK mkpart primary ext4 1MiB $((1 + ${partitions.boot * 1024}))MiB
+sudo parted -s $DISK set 1 boot on
+
+# Create root partition
+sudo parted -s $DISK mkpart primary ext4 $((1 + ${partitions.boot * 1024}))MiB $((1 + ${partitions.boot * 1024} + ${partitions.root * 1024}))MiB
+
+# Create swap partition
+sudo parted -s $DISK mkpart primary linux-swap $((1 + ${partitions.boot * 1024} + ${partitions.root * 1024}))MiB $((1 + ${partitions.boot * 1024} + ${partitions.root * 1024} + ${partitions.swap * 1024}))MiB
+
+# Create home partition (rest of disk)
+sudo parted -s $DISK mkpart primary ext4 $((1 + ${partitions.boot * 1024} + ${partitions.root * 1024} + ${partitions.swap * 1024}))MiB 100%
+
+echo "Partitions created successfully!"
+echo "Format partitions with: mkfs.ext4 /dev/sda1; mkfs.ext4 /dev/sda2; mkswap /dev/sda3; mkfs.ext4 /dev/sda4"`;
+}
+
+export function generateGPTBIOSBootScript(
+  partitions: PartitionRecommendation
+): string {
+  return `#!/bin/bash
+# GPT BIOS Boot Script - Generated by Linux Partition Calculator
+# WARNING: This script will partition your disk. Use with caution!
+
+set -e
+
+DISK="/dev/sda"  # Change this to your disk
+
+echo "Creating GPT BIOS partitions on $DISK..."
+
+# Create partition table
+sudo parted -s $DISK mklabel gpt
+
+# Create BIOS boot partition
+sudo parted -s $DISK mkpart primary 1MiB 3MiB
+sudo parted -s $DISK set 1 bios_grub on
+
+# Create boot partition
+sudo parted -s $DISK mkpart primary ext4 3MiB $((3 + ${partitions.boot * 1024}))MiB
+
+# Create root partition
+sudo parted -s $DISK mkpart primary ext4 $((3 + ${partitions.boot * 1024}))MiB $((3 + ${partitions.boot * 1024} + ${partitions.root * 1024}))MiB
+
+# Create swap partition
+sudo parted -s $DISK mkpart primary linux-swap $((3 + ${partitions.boot * 1024} + ${partitions.root * 1024}))MiB $((3 + ${partitions.boot * 1024} + ${partitions.root * 1024} + ${partitions.swap * 1024}))MiB
+
+# Create home partition (rest of disk)
+sudo parted -s $DISK mkpart primary ext4 $((3 + ${partitions.boot * 1024} + ${partitions.root * 1024} + ${partitions.swap * 1024}))MiB 100%
+
+echo "Partitions created successfully!"
+echo "Format partitions with: mkfs.ext4 /dev/sda2; mkfs.ext4 /dev/sda3; mkswap /dev/sda4; mkfs.ext4 /dev/sda5"`;
+}
+
+export function generateLVMScript(
+  partitions: PartitionRecommendation,
+  hostname: string = "linux-system"
+): string {
+  return `#!/bin/bash
+# LVM Setup Script - Generated by Linux Partition Calculator
+# This script sets up LVM on top of existing partitions
+
+set -e
+
+PV="/dev/sda3"  # Physical volume (usually root partition)
+VG_NAME="${hostname}-vg"
+LV_ROOT="${hostname}-root"
+LV_HOME="${hostname}-home"
+
+echo "Setting up LVM..."
+
+# Create physical volume
+sudo pvcreate $PV
+
+# Create volume group
+sudo vgcreate $VG_NAME $PV
+
+# Create logical volumes
+sudo lvcreate -L ${partitions.root}G -n $LV_ROOT $VG_NAME
+sudo lvcreate -L ${partitions.home}G -n $LV_HOME $VG_NAME
+
+echo "LVM setup complete!"
+echo "Format logical volumes with: mkfs.ext4 /dev/mapper/$VG_NAME-$LV_ROOT; mkfs.ext4 /dev/mapper/$VG_NAME-$LV_HOME"`;
+}
+
+export function getPerformanceTips(
+  diskType: DiskType,
+  distroId: string
+): string[] {
+  const disk = DISK_TYPES[diskType];
+  return disk.performanceTips;
 }

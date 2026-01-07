@@ -11,8 +11,8 @@ import {
 interface SettingsPanelProps {
   hostname: string;
   timezone: string;
-  onHostnameChange: (value: string) => void;
-  onTimezoneChange: (value: string) => void;
+  setHostname: (value: string) => void;
+  setTimezone: (value: string) => void;
 }
 
 const TIMEZONES = [
@@ -35,8 +35,8 @@ const TIMEZONES = [
 export default function SettingsPanel({
   hostname,
   timezone,
-  onHostnameChange,
-  onTimezoneChange,
+  setHostname,
+  setTimezone,
 }: SettingsPanelProps) {
   return (
     <div className="space-y-4">
@@ -46,7 +46,7 @@ export default function SettingsPanel({
         <Input
           id="hostname"
           value={hostname}
-          onChange={(e) => onHostnameChange(e.target.value)}
+          onChange={(e) => setHostname(e.target.value)}
           placeholder="linux-system"
           className="w-full"
         />
@@ -58,7 +58,7 @@ export default function SettingsPanel({
       {/* Timezone */}
       <div className="space-y-2">
         <Label htmlFor="timezone">Fuso Horário</Label>
-        <Select value={timezone} onValueChange={onTimezoneChange}>
+        <Select value={timezone} onValueChange={setTimezone}>
           <SelectTrigger id="timezone">
             <SelectValue />
           </SelectTrigger>
