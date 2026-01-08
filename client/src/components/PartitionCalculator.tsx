@@ -27,6 +27,9 @@ import {
   generateMBRBootScript,
   generateGPTBIOSBootScript,
   generateLVMScript,
+  generatePartcloneScript,
+  calculateSpaceGrowthProjection,
+  validatePartitionConfiguration,
   getPerformanceTips,
   FirmwareType,
   DiskType,
@@ -34,6 +37,8 @@ import {
 } from "@/lib/partitionData";
 import SettingsPanel from "./SettingsPanel";
 import PartitionVisualization from "./PartitionVisualization";
+import ValidationPanel from "./ValidationPanel";
+import ReviewSection from "./ReviewSection";
 import { toast } from "sonner";
 
 interface SavedConfiguration {
@@ -274,9 +279,12 @@ export default function PartitionCalculator() {
       )}
 
       <Tabs defaultValue="calculator" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="calculator">Calculadora</TabsTrigger>
+          <TabsTrigger value="validation">Validação</TabsTrigger>
+          <TabsTrigger value="partclone">Backup</TabsTrigger>
           <TabsTrigger value="export">Exportar</TabsTrigger>
+          <TabsTrigger value="reviews">Avaliações</TabsTrigger>
         </TabsList>
 
         <TabsContent value="calculator" className="space-y-6">
@@ -677,6 +685,84 @@ export default function PartitionCalculator() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Validation Tab */}
+        <TabsContent value="validation" className="space-y-6">
+          <ValidationPanel
+            validation={validatePartitionConfiguration(
+              partitions,
+              selectedDistro,
+              systemPercentage
+            )}
+            growthProjection={calculateSpaceGrowthProjection(
+              partitions,
+              selectedDistro
+            )}
+          />
+        </TabsContent>
+
+        {/* Partclone Backup Tab */}
+        <TabsContent value="partclone" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Gerador de Script Partclone</CardTitle>
+              <CardDescription>
+                Crie scripts para backup e restore de particoes
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="bg-slate-50 dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-700 max-h-96 overflow-y-auto font-mono text-xs">
+                <pre className="whitespace-pre-wrap break-words">
+                  {generatePartcloneScript(partitions, hostname)}
+                </pre>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => {
+                    navigator.clipboard.writeText(
+                      generatePartcloneScript(partitions, hostname)
+                    );
+                    toast.success("Script copiado para a area de transferencia!");
+                  }}
+                  className="flex-1 gap-2"
+                >
+                  <Copy className="w-4 h-4" />
+                  Copiar
+                </Button>
+                <Button
+                  onClick={() => {
+                    const element = document.createElement("a");
+                    element.setAttribute(
+                      "href",
+                      "data:text/plain;charset=utf-8," +
+                        encodeURIComponent(
+                          generatePartcloneScript(partitions, hostname)
+                        )
+                    );
+                    element.setAttribute(
+                      "download",
+                      `partclone-backup-${hostname}.sh`
+                    );
+                    element.style.display = "none";
+                    document.body.appendChild(element);
+                    element.click();
+                    document.body.removeChild(element);
+                    toast.success("Script baixado com sucesso!");
+                  }}
+                  className="flex-1 gap-2"
+                >
+                  <Download className="w-4 h-4" />
+                  Baixar
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Reviews Tab */}
+        <TabsContent value="reviews" className="space-y-6">
+          <ReviewSection />
         </TabsContent>
       </Tabs>
     </div>
