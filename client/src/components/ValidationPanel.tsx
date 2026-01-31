@@ -1,9 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertCircle, CheckCircle, AlertTriangle, Lightbulb } from "lucide-react";
-import {
-  ValidationResult,
-  SpaceGrowthProjection,
-} from "@/lib/partitionData";
+
 import {
   LineChart,
   Line,
@@ -16,8 +13,18 @@ import {
 } from "recharts";
 
 interface ValidationPanelProps {
-  validation: ValidationResult;
-  growthProjection: SpaceGrowthProjection[];
+  validation: {
+    isValid: boolean;
+    warnings: string[];
+    errors: string[];
+    suggestions: string[];
+  };
+  growthProjection: Array<{
+    year: number;
+    system: number;
+    home: number;
+    free: number;
+  }>;
 }
 
 export default function ValidationPanel({
@@ -37,7 +44,7 @@ export default function ValidationPanel({
           </CardHeader>
           <CardContent>
             <ul className="space-y-2">
-              {validation.errors.map((error, i) => (
+              {validation.errors.map((error: string, i: number) => (
                 <li key={i} className="flex gap-2 text-sm">
                   <span className="text-red-600 dark:text-red-400 font-bold">
                     ✕
@@ -60,7 +67,7 @@ export default function ValidationPanel({
           </CardHeader>
           <CardContent>
             <ul className="space-y-2">
-              {validation.warnings.map((warning, i) => (
+              {validation.warnings.map((warning: string, i: number) => (
                 <li key={i} className="flex gap-2 text-sm">
                   <span className="text-yellow-600 dark:text-yellow-400 font-bold">
                     ⚠
@@ -99,7 +106,7 @@ export default function ValidationPanel({
           </CardHeader>
           <CardContent>
             <ul className="space-y-2">
-              {validation.suggestions.map((suggestion, i) => (
+              {validation.suggestions.map((suggestion: string, i: number) => (
                 <li key={i} className="flex gap-2 text-sm">
                   <span className="text-blue-600 dark:text-blue-400 font-bold">
                     💡
@@ -160,13 +167,13 @@ export default function ValidationPanel({
 
             <div className="mt-6 space-y-2 text-sm">
               <p className="font-semibold">Análise da Projeção:</p>
-              {growthProjection[growthProjection.length - 1].warningLevel && (
+              {growthProjection[growthProjection.length - 1].free < growthProjection[0].free * 0.1 && (
                 <p className="text-yellow-700 dark:text-yellow-400">
                   ⚠️ Em 5 anos, o espaço livre pode ser inferior a 10%. Considere
                   expandir o disco ou gerenciar melhor o espaço.
                 </p>
               )}
-              {!growthProjection[growthProjection.length - 1].warningLevel && (
+              {growthProjection[growthProjection.length - 1].free >= growthProjection[0].free * 0.1 && (
                 <p className="text-green-700 dark:text-green-400">
                   ✓ Sua configuração deve ser suficiente para os próximos 5 anos
                   com o padrão de uso típico.

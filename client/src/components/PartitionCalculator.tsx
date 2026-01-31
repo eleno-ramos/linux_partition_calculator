@@ -23,10 +23,6 @@ import {
   DISK_TYPES,
   calculatePartitions,
   generateKickstartXML,
-  generateUEFIBootScript,
-  generateMBRBootScript,
-  generateGPTBIOSBootScript,
-  generateLVMScript,
   generatePartcloneScript,
   calculateSpaceGrowthProjection,
   validatePartitionConfiguration,
@@ -76,6 +72,7 @@ export default function PartitionCalculator() {
   const [savedConfigs, setSavedConfigs] = useState<SavedConfiguration[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [systemPercentage, setSystemPercentage] = useState(20);
+  const [includeHome, setIncludeHome] = useState(true);
 
   // Load saved configurations from localStorage
   useEffect(() => {
@@ -95,7 +92,8 @@ export default function PartitionCalculator() {
     selectedDistro,
     hibernation,
     useMinimum,
-    systemPercentage
+    systemPercentage,
+    includeHome
   );
 
   const distro = DISTRIBUTIONS[selectedDistro];
@@ -120,18 +118,7 @@ export default function PartitionCalculator() {
   };
 
   const handleDownloadScript = () => {
-    let script = "";
-    if (selectedFirmware === "uefi") {
-      script = generateUEFIBootScript(partitions);
-    } else if (selectedFirmware === "mbr" || selectedFirmware === "bios") {
-      script = generateMBRBootScript(partitions);
-    } else if (selectedFirmware === "gpt") {
-      script = generateGPTBIOSBootScript(partitions);
-    }
-
-    if (useLVM) {
-      script += "\n\n" + generateLVMScript(partitions, hostname);
-    }
+    let script = generatePartcloneScript(partitions, hostname);
 
     const element = document.createElement("a");
     element.setAttribute(
