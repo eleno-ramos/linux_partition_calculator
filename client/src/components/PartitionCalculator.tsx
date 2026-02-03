@@ -16,6 +16,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Settings, Download, Copy, Moon, Sun, History, Sliders } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import LanguageToggle from "./LanguageToggle";
 import {
   DISTRIBUTIONS,
   PROCESSORS,
@@ -201,6 +203,7 @@ export default function PartitionCalculator() {
     <div className="space-y-6">
       {/* Top Bar with Theme Toggle and History */}
       <div className="flex gap-2 justify-end">
+        <LanguageToggle />
         <Button
           variant="outline"
           size="sm"
