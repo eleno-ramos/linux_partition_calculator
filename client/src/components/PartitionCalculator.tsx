@@ -27,6 +27,9 @@ import {
   calculateSpaceGrowthProjection,
   validatePartitionConfiguration,
   getPerformanceTips,
+  calculateAdvancedPartitions,
+  generateAdvancedKickstart,
+  AdvancedPartitionConfig,
   FirmwareType,
   DiskType,
   PartitionRecommendation,
@@ -35,6 +38,7 @@ import SettingsPanel from "./SettingsPanel";
 import PartitionVisualization from "./PartitionVisualization";
 import ValidationPanel from "./ValidationPanel";
 import ReviewSection from "./ReviewSection";
+import AdvancedPartitionEditor from "./AdvancedPartitionEditor";
 import { toast } from "sonner";
 
 interface SavedConfiguration {
@@ -73,6 +77,8 @@ export default function PartitionCalculator() {
   const [showHistory, setShowHistory] = useState(false);
   const [systemPercentage, setSystemPercentage] = useState(20);
   const [includeHome, setIncludeHome] = useState(true);
+  const [advancedMode, setAdvancedMode] = useState(false);
+  const [advancedConfig, setAdvancedConfig] = useState<AdvancedPartitionConfig | null>(null);
 
   // Load saved configurations from localStorage
   useEffect(() => {
@@ -266,8 +272,9 @@ export default function PartitionCalculator() {
       )}
 
       <Tabs defaultValue="calculator" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="calculator">Calculadora</TabsTrigger>
+          <TabsTrigger value="advanced">Avançado</TabsTrigger>
           <TabsTrigger value="validation">Validação</TabsTrigger>
           <TabsTrigger value="partclone">Backup</TabsTrigger>
           <TabsTrigger value="export">Exportar</TabsTrigger>
@@ -670,6 +677,32 @@ export default function PartitionCalculator() {
                   </CardContent>
                 </Card>
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Advanced Partitioning Tab */}
+        <TabsContent value="advanced" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Sliders className="w-5 h-5" />
+                Particionamento Avançado
+              </CardTitle>
+              <CardDescription>
+                Customize o tamanho de cada partição e adicione pontos de montagem opcionais
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {advancedConfig ? (
+                <AdvancedPartitionEditor
+                  config={advancedConfig}
+                  onUpdate={setAdvancedConfig}
+                  diskSizeGB={diskSize}
+                />
+              ) : (
+                <p className="text-muted-foreground">Carregando configuração avançada...</p>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
