@@ -546,7 +546,11 @@ export function generateKickstartXML(
   distroId: string,
   partitions: PartitionRecommendation,
   hostname: string,
-  timezone: string
+  timezone: string,
+  username?: string,
+  password?: string,
+  wifiSSID?: string,
+  wifiPassword?: string
 ): string {
   const distro = DISTRIBUTIONS[distroId];
 
@@ -564,6 +568,7 @@ firewall --enabled
 
 # Network Configuration
 network --bootproto=dhcp --onboot=on --hostname=${hostname}
+${wifiSSID ? `network --device=wlan0 --bootproto=dhcp --onboot=on --ssid=${wifiSSID} --password=${wifiPassword}` : ''}
 
 # Partitioning
 zerombr
@@ -587,6 +592,14 @@ install
 # Post-installation
 %post
 echo "System installed successfully"
+${username && password ? `
+# Create user account
+useradd -m -s /bin/bash ${username}
+echo "${username}:${password}" | chpasswd
+
+# Add user to sudo group
+usermod -aG sudo ${username}
+` : ''}
 %end
 
 # Reboot

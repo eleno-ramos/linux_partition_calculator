@@ -2,9 +2,10 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
+import { z } from "zod";
+import { trackVisitor, getVisitorStats, addReview, getReviews, getReviewStats, trackShare, getShareStats } from "./db";
 
 export const appRouter = router({
-    // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
   system: systemRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
@@ -17,12 +18,73 @@ export const appRouter = router({
     }),
   }),
 
-  // TODO: add feature routers here, e.g.
-  // todo: router({
-  //   list: protectedProcedure.query(({ ctx }) =>
-  //     db.getUserTodos(ctx.user.id)
-  //   ),
-  // }),
+  // Analytics and visitor tracking
+  analytics: router({
+    trackVisitor: publicProcedure
+      .input(
+        z.object({
+          ipAddress: z.string(),
+          country: z.string().optional(),
+          continent: z.string().optional(),
+          countryCode: z.string().optional(),
+          latitude: z.string().optional(),
+          longitude: z.string().optional(),
+          userAgent: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        await trackVisitor(input);
+        return { success: true };
+      }),
+
+    getStats: publicProcedure.query(async () => {
+      return await getVisitorStats();
+    }),
+  }),
+
+  // Reviews and ratings
+  reviews: router({
+    add: publicProcedure
+      .input(
+        z.object({
+          visitorId: z.string(),
+          name: z.string(),
+          rating: z.number().min(1).max(5),
+          comment: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        await addReview(input);
+        return { success: true };
+      }),
+
+    list: publicProcedure.query(async () => {
+      return await getReviews();
+    }),
+
+    stats: publicProcedure.query(async () => {
+      return await getReviewStats();
+    }),
+  }),
+
+  // Share tracking
+  shares: router({
+    track: publicProcedure
+      .input(
+        z.object({
+          visitorId: z.string(),
+          platform: z.enum(["whatsapp", "facebook", "instagram", "email"]),
+        })
+      )
+      .mutation(async ({ input }) => {
+        await trackShare(input);
+        return { success: true };
+      }),
+
+    stats: publicProcedure.query(async () => {
+      return await getShareStats();
+    }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

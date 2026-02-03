@@ -1,6 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Cpu, HardDrive, Info } from "lucide-react";
 import PartitionCalculator from "@/components/PartitionCalculator";
+import VisitorGlobe from "@/components/VisitorGlobe";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -10,7 +11,9 @@ export default function Home() {
   let { user, loading, error, isAuthenticated, logout } = useAuth();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
+    <>
+      <VisitorGlobe />
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-b border-slate-200 dark:border-slate-800">
         <div className="container py-4">
@@ -163,5 +166,6 @@ export default function Home() {
         </div>
       </footer>
     </div>
+    </>
   );
 }
