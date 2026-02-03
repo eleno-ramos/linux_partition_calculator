@@ -1,9 +1,14 @@
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Cpu, HardDrive, Info } from "lucide-react";
 import PartitionCalculator from "@/components/PartitionCalculator";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function Home() {
+  // The userAuth hooks provides authentication state
+  // To implement login/logout functionality, simply call logout() or redirect to getLoginUrl()
+  let { user, loading, error, isAuthenticated, logout } = useAuth();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
       {/* Header */}
