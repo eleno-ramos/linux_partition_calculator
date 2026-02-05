@@ -1,6 +1,6 @@
 import { eq, desc, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, visitors, InsertVisitor, reviews, InsertReview, shares, InsertShare, savedConfigurations, InsertSavedConfiguration, analytics } from "../drizzle/schema";
+import { InsertUser, users, visitors, InsertVisitor, reviews, InsertReview, shares, InsertShare, savedConfigurations, InsertSavedConfiguration, analytics, auditLog, InsertAuditLog } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -223,6 +223,61 @@ export async function getUserConfigurations(userId: number) {
     return await db.select().from(savedConfigurations).where(eq(savedConfigurations.userId, userId)).orderBy(desc(savedConfigurations.createdAt));
   } catch (error) {
     console.error("[Database] Failed to get user configurations:", error);
+    return [];
+  }
+}
+
+// User management functions
+export async function getAllUsers() {
+  const db = await getDb();
+  if (!db) return [];
+
+  try {
+    return await db.select().from(users).orderBy(desc(users.createdAt));
+  } catch (error) {
+    console.error("[Database] Failed to get all users:", error);
+    return [];
+  }
+}
+
+export async function updateUserRole(userId: number, newRole: "user" | "admin"): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot update user role: database not available");
+    return;
+  }
+
+  try {
+    await db.update(users).set({ role: newRole }).where(eq(users.id, userId));
+  } catch (error) {
+    console.error("[Database] Failed to update user role:", error);
+    throw error;
+  }
+}
+
+// Audit log functions
+export async function logAuditAction(auditEntry: InsertAuditLog): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot log audit action: database not available");
+    return;
+  }
+
+  try {
+    await db.insert(auditLog).values(auditEntry);
+  } catch (error) {
+    console.error("[Database] Failed to log audit action:", error);
+  }
+}
+
+export async function getAuditLog(limit: number = 100) {
+  const db = await getDb();
+  if (!db) return [];
+
+  try {
+    return await db.select().from(auditLog).orderBy(desc(auditLog.createdAt)).limit(limit);
+  } catch (error) {
+    console.error("[Database] Failed to get audit log:", error);
     return [];
   }
 }

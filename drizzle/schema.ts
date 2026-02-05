@@ -108,3 +108,23 @@ export const analytics = mysqlTable("analytics", {
 
 export type Analytics = typeof analytics.$inferSelect;
 export type InsertAnalytics = typeof analytics.$inferInsert;
+// Audit log for admin actions
+export const auditLog = mysqlTable("auditLog", {
+  id: int("id").autoincrement().primaryKey(),
+  adminId: int("adminId").notNull(), // ID do admin que realizou a ação
+  action: varchar("action", { length: 50 }).notNull(), // promote, demote, delete, etc
+  targetUserId: int("targetUserId"), // ID do usuário afetado
+  targetUserName: varchar("targetUserName", { length: 255 }),
+  targetUserEmail: varchar("targetUserEmail", { length: 320 }),
+  oldRole: mysqlEnum("oldRole", ["user", "admin"]),
+  newRole: mysqlEnum("newRole", ["user", "admin"]),
+  reason: text("reason"), // Motivo da ação
+  ipAddress: varchar("ipAddress", { length: 45 }),
+  userAgent: text("userAgent"),
+  status: mysqlEnum("status", ["success", "failed"]).default("success").notNull(),
+  errorMessage: text("errorMessage"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type AuditLog = typeof auditLog.$inferSelect;
+export type InsertAuditLog = typeof auditLog.$inferInsert;

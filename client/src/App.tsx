@@ -7,6 +7,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminSettings from "./pages/AdminSettings";
+import AdminUsers from "./pages/AdminUsers";
 import Footer from "./components/Footer";
 
 function Router() {
@@ -18,6 +19,7 @@ function Router() {
           <Route path={"/"} component={Home} />
           <Route path={"/admin"} component={AdminDashboard} />
           <Route path={"/admin/settings"} component={AdminSettings} />
+          <Route path={"/admin/users"} component={AdminUsers} />
           <Route path={"/404"} component={NotFound} />
           {/* Final fallback route */}
           <Route component={NotFound} />
