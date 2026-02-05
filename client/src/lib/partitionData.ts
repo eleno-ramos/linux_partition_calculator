@@ -975,3 +975,99 @@ usermod -aG sudo ${username}
 # Reboot
 reboot`;
 }
+
+
+export interface AutoConfigRecommendation {
+  firmware: FirmwareType;
+  diskType: DiskType;
+  distro: string;
+  useHibernation: boolean;
+  notes: string[];
+}
+
+export function getAutoConfigRecommendation(processorId: string): AutoConfigRecommendation {
+  const processor = PROCESSORS[processorId];
+  
+  if (!processor) {
+    return {
+      firmware: "uefi",
+      diskType: "ssd",
+      distro: "ubuntu",
+      useHibernation: false,
+      notes: ["Processador desconhecido, usando configuração padrão"]
+    };
+  }
+
+  // Processadores modernos (2015+) - UEFI/GPT
+  if (processor.releaseYear && processor.releaseYear >= 2015) {
+    return {
+      firmware: "uefi",
+      diskType: "ssd",
+      distro: "ubuntu",
+      useHibernation: true,
+      notes: [
+        "Processador moderno detectado",
+        "UEFI recomendado para melhor compatibilidade",
+        "SSD recomendado para melhor performance",
+        "Hibernação habilitada para laptops"
+      ]
+    };
+  }
+
+  // Processadores intermediários (2009-2014) - UEFI ou BIOS
+  if (processor.releaseYear && processor.releaseYear >= 2009 && processor.releaseYear < 2015) {
+    return {
+      firmware: "bios",
+      diskType: "hdd",
+      distro: "debian",
+      useHibernation: false,
+      notes: [
+        "Processador intermediário detectado",
+        "BIOS (MBR) recomendado para compatibilidade",
+        "HDD ainda é viável, mas SSD melhora muito a performance",
+        "Distribuição estável recomendada"
+      ]
+    };
+  }
+
+  // Processadores antigos (2003-2008) - BIOS
+  if (processor.releaseYear && processor.releaseYear >= 2003 && processor.releaseYear < 2009) {
+    return {
+      firmware: "bios",
+      diskType: "hdd",
+      distro: "debian",
+      useHibernation: false,
+      notes: [
+        "Processador antigo detectado",
+        "BIOS (MBR) é a única opção",
+        "HDD é o padrão para este período",
+        "Distribuição leve recomendada para melhor performance"
+      ]
+    };
+  }
+
+  // Processadores muito antigos (2001-2002) - BIOS, 32-bit
+  if (processor.releaseYear && processor.releaseYear <= 2002) {
+    return {
+      firmware: "bios",
+      diskType: "hdd",
+      distro: "debian",
+      useHibernation: false,
+      notes: [
+        "Processador muito antigo detectado",
+        "BIOS (MBR) obrigatório",
+        "Máximo de 2TB por disco",
+        "Considere usar distribuição 32-bit para melhor compatibilidade"
+      ]
+    };
+  }
+
+  // Fallback
+  return {
+    firmware: "bios",
+    diskType: "hdd",
+    distro: "debian",
+    useHibernation: false,
+    notes: ["Configuração padrão aplicada"]
+  };
+}

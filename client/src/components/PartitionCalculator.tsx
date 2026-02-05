@@ -31,6 +31,7 @@ import {
   getPerformanceTips,
   calculateAdvancedPartitions,
   generateAdvancedKickstart,
+  getAutoConfigRecommendation,
   AdvancedPartitionConfig,
   FirmwareType,
   DiskType,
@@ -81,6 +82,7 @@ export default function PartitionCalculator() {
   const [includeHome, setIncludeHome] = useState(true);
   const [advancedMode, setAdvancedMode] = useState(false);
   const [advancedConfig, setAdvancedConfig] = useState<AdvancedPartitionConfig | null>(null);
+  const [autoUpdateEnabled, setAutoUpdateEnabled] = useState(true);
 
   // Load saved configurations from localStorage
   useEffect(() => {
@@ -93,6 +95,16 @@ export default function PartitionCalculator() {
       }
     }
   }, []);
+
+  // Auto-update configuration based on processor selection
+  useEffect(() => {
+    if (!autoUpdateEnabled) return;
+    
+    const recommendation = getAutoConfigRecommendation(selectedProcessor);
+    setSelectedFirmware(recommendation.firmware);
+    setSelectedDiskType(recommendation.diskType);
+    setHibernation(recommendation.useHibernation);
+  }, [selectedProcessor, autoUpdateEnabled]);
 
   const partitions = calculatePartitions(
     diskSize,
