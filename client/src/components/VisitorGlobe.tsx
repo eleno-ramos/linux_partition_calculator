@@ -84,7 +84,7 @@ export default function VisitorGlobe() {
       {/* Globo Animado com Contador */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed top-4 right-4 z-50 group"
+        className="fixed top-4 right-4 z-[9999] group"
       >
         <div className="relative w-20 h-20 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full shadow-2xl hover:shadow-2xl transition-all duration-300 flex items-center justify-center cursor-pointer transform hover:scale-110">
           {/* Globo com animação */}
