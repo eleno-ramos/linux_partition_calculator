@@ -395,6 +395,24 @@ export function calculateSwapSize(
   }
 }
 
+export function shouldIncludeBootEFI(processorId: string, firmware: string): boolean {
+  // Processadores modernos (2015+) com UEFI sempre precisam de /boot/efi
+  const modernProcessors = ['intel_x86', 'amd_ryzen', 'arm_cortex_a72', 'arm_cortex_a73'];
+  
+  // BIOS/MBR não precisa de /boot/efi
+  if (firmware === 'bios' || firmware === 'mbr') {
+    return false;
+  }
+  
+  // UEFI/GPT com processadores modernos precisa de /boot/efi
+  if ((firmware === 'uefi' || firmware === 'gpt') && modernProcessors.includes(processorId)) {
+    return true;
+  }
+  
+  // Processadores antigos podem não precisar
+  return false;
+}
+
 export function calculatePartitions(
   totalDiskGB: number,
   ramGB: number,
@@ -402,7 +420,9 @@ export function calculatePartitions(
   hibernation: boolean,
   useMinimum: boolean = false,
   systemPercentage: number = 20,
-  includeHome: boolean = true
+  includeHome: boolean = true,
+  processorId: string = 'intel_x86',
+  firmware: string = 'uefi'
 ): PartitionRecommendation {
   const distro = DISTRIBUTIONS[distroId];
 
@@ -410,7 +430,7 @@ export function calculatePartitions(
   const clampedSystemPercentage = Math.max(10, Math.min(80, systemPercentage));
   const systemDiskGB = (totalDiskGB * clampedSystemPercentage) / 100;
 
-  const efiSize = 0.5;
+  const efiSize = shouldIncludeBootEFI(processorId, firmware) ? 0.5 : 0;
   const bootSize = distro.bootSize;
   const swapSize = calculateSwapSize(ramGB, hibernation, distroId);
 

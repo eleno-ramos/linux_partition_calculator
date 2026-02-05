@@ -33,6 +33,8 @@ export default function ReviewSection() {
     name: "",
     rating: 5,
     comment: "",
+    isAnonymous: false,
+    country: "🌍",
   });
   const [hoveredRating, setHoveredRating] = useState(0);
 
@@ -74,14 +76,19 @@ export default function ReviewSection() {
   }, []);
 
   const handleSubmitReview = () => {
-    if (!formData.name.trim() || !formData.comment.trim()) {
-      toast.error("Por favor, preencha todos os campos");
+    if (!formData.isAnonymous && !formData.name.trim()) {
+      toast.error("Por favor, insira um nome ou marque como anônimo");
+      return;
+    }
+    if (!formData.comment.trim()) {
+      toast.error("Por favor, insira um comentário");
       return;
     }
 
+    const displayName = formData.isAnonymous ? `${formData.country} Anônimo` : formData.name;
     const newReview: Review = {
       id: Date.now().toString(),
-      name: formData.name,
+      name: displayName,
       rating: formData.rating,
       comment: formData.comment,
       timestamp: Date.now(),
@@ -104,7 +111,7 @@ export default function ReviewSection() {
     localStorage.setItem("partition_reviews", JSON.stringify(updatedReviews));
     localStorage.setItem("partition_stats", JSON.stringify(updatedStats));
 
-    setFormData({ name: "", rating: 5, comment: "" });
+    setFormData({ name: "", rating: 5, comment: "", isAnonymous: false, country: "🌍" });
     toast.success("Avaliação enviada com sucesso!");
   };
 
@@ -206,14 +213,26 @@ export default function ReviewSection() {
         <CardContent className="space-y-4">
           <div>
             <label className="text-sm font-medium">Seu Nome</label>
-            <Input
-              placeholder="Digite seu nome"
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-              className="mt-1"
-            />
+            <div className="flex gap-2 mt-1">
+              <Input
+                placeholder="Digite seu nome"
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
+                disabled={formData.isAnonymous}
+                className="flex-1"
+              />
+              <button
+                onClick={() =>
+                  setFormData({ ...formData, isAnonymous: !formData.isAnonymous })
+                }
+                className={`px-3 py-2 rounded border transition-colors ${formData.isAnonymous ? "bg-blue-100 border-blue-300 text-blue-700" : "border-slate-300 text-slate-600 hover:bg-slate-50"}`}
+                title="Comentar como anonimo"
+              >
+                {formData.country} {formData.isAnonymous ? "Anonimo" : "Nomeado"}
+              </button>
+            </div>
           </div>
 
           <div>

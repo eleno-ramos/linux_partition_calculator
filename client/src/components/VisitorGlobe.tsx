@@ -84,9 +84,9 @@ export default function VisitorGlobe() {
       {/* Globo Animado com Contador */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed top-6 right-6 z-40 group"
+        className="fixed top-4 right-4 z-50 group"
       >
-        <div className="relative w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center cursor-pointer transform hover:scale-110">
+        <div className="relative w-20 h-20 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full shadow-2xl hover:shadow-2xl transition-all duration-300 flex items-center justify-center cursor-pointer transform hover:scale-110">
           {/* Globo com animação */}
           <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-300 to-blue-700 opacity-50 animate-pulse" />
           <Globe className="w-8 h-8 text-white relative z-10 animate-spin" style={{ animationDuration: "20s" }} />
