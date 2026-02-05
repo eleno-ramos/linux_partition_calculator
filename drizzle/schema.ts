@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { boolean, int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -128,3 +128,21 @@ export const auditLog = mysqlTable("auditLog", {
 
 export type AuditLog = typeof auditLog.$inferSelect;
 export type InsertAuditLog = typeof auditLog.$inferInsert;
+
+// Admin authentication table
+export const adminAuth = mysqlTable("adminAuth", {
+  id: int("id").autoincrement().primaryKey(),
+  email: varchar("email", { length: 320 }).notNull().unique(),
+  passwordHash: text("passwordHash").notNull(),
+  lastPasswordChange: timestamp("lastPasswordChange").defaultNow().notNull(),
+  passwordResetToken: varchar("passwordResetToken", { length: 255 }),
+  passwordResetExpires: timestamp("passwordResetExpires"),
+  googleId: varchar("googleId", { length: 255 }).unique(),
+  twoFactorEnabled: int("twoFactorEnabled").default(0).notNull(), // 0 = false, 1 = true
+  twoFactorSecret: text("twoFactorSecret"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AdminAuth = typeof adminAuth.$inferSelect;
+export type InsertAdminAuth = typeof adminAuth.$inferInsert;
