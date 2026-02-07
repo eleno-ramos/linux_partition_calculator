@@ -113,3 +113,13 @@
 - [x] Testes unitários para reviews e shares
 - [x] Integração na página Home
 - [ ] Sincronizar com GitHub
+
+
+## Fase 2 - Gerenciamento Admin e Geolocalização (Current)
+- [ ] Página /admin/users para gerenciar usuários (promover/rebaixar/deletar)
+- [ ] Página /admin/settings com 4 abas (Geral, Segurança, Notificações, Integrações)
+- [ ] Geolocalização automática de país/idioma do visitante
+- [ ] Toggle de idioma com localStorage (PT/EN/ES/FR)
+- [ ] Procedures tRPC para operações admin
+- [ ] Testes unitários para admin operations
+- [ ] Sincronizar com GitHub
