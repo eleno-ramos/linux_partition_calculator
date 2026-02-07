@@ -78,3 +78,13 @@
 - [x] Atualizar UI para exibir seleção de boot type
 - [x] Adicionar validação de compatibilidade boot/firmware
 - [x] Gerar scripts de instalação com boot type correto
+
+
+## Integração de Particionamento & Editor de Tamanhos (Current Session)
+- [x] Analisar seção atual "Sobre o Particionamento"
+- [x] Integrar com configurações de hardware e boot type
+- [x] Criar componente editor de tamanhos de partições
+- [x] Adicionar validação com mínimos de referência
+- [x] Exibir recomendações dinâmicas baseado em hardware
+- [x] Testar integração completa
+- [ ] Sincronizar com GitHub

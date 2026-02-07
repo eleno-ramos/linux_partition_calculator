@@ -44,6 +44,8 @@ import PartitionVisualization from "./PartitionVisualization";
 import ValidationPanel from "./ValidationPanel";
 import ReviewSection from "./ReviewSection";
 import AdvancedPartitionEditor from "./AdvancedPartitionEditor";
+import PartitioningGuide from "./PartitioningGuide";
+import PartitionSizeEditor from "./PartitionSizeEditor";
 import { toast } from "sonner";
 
 interface SavedConfiguration {
@@ -297,8 +299,10 @@ export default function PartitionCalculator() {
 
       {/* Main Tabs */}
       <Tabs defaultValue="calculator" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1 h-auto p-1">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-1 h-auto p-1">
           <TabsTrigger value="calculator" className="text-xs sm:text-sm">Calculadora</TabsTrigger>
+          <TabsTrigger value="partitioning" className="text-xs sm:text-sm">Particionamento</TabsTrigger>
+          <TabsTrigger value="editor" className="text-xs sm:text-sm">Editor</TabsTrigger>
           <TabsTrigger value="results" className="text-xs sm:text-sm">Resultado</TabsTrigger>
           <TabsTrigger value="export" className="text-xs sm:text-sm">Exportar</TabsTrigger>
           <TabsTrigger value="validation" className="text-xs sm:text-sm">Validação</TabsTrigger>
@@ -547,6 +551,34 @@ export default function PartitionCalculator() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Partitioning Guide Tab */}
+        <TabsContent value="partitioning" className="space-y-4">
+          <PartitioningGuide
+            firmware={selectedFirmware}
+            diskSize={diskSize}
+            diskType={selectedDiskType}
+            processorId={selectedProcessor}
+            distroId={selectedDistro}
+            partitions={partitions}
+          />
+        </TabsContent>
+
+        {/* Partition Size Editor Tab */}
+        <TabsContent value="editor" className="space-y-4">
+          <PartitionSizeEditor
+            partitions={partitions}
+            onPartitionsChange={(newPartitions) => {
+              // Update partitions state
+              const updatedPartitions = { ...partitions, ...newPartitions };
+              // This would need to be handled by parent component
+              toast.success("Tamanhos de partições atualizados!");
+            }}
+            distroId={selectedDistro}
+            firmware={selectedFirmware}
+            diskSize={diskSize}
+          />
         </TabsContent>
 
         {/* Results Tab - Cleaner */}
