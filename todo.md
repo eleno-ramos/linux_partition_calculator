@@ -51,3 +51,12 @@
 - [x] Adicionar melhor feedback visual (loading states, success messages)
 - [ ] Implementar onboarding/tutorial para novos usuários
 - [ ] Testar responsividade em todos os dispositivos
+
+
+## Globo Animado - Melhorias (Current Session)
+- [x] Melhorar animação do globo com Canvas 2D
+- [x] Implementar mapa mundi interativo com dados de visitantes
+- [x] Adicionar pontos de visitantes por país
+- [x] Implementar tooltips com informações de país
+- [x] Adicionar animação de rotação suave
+- [ ] Integrar com dados reais do banco de dados
