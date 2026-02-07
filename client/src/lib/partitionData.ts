@@ -567,6 +567,7 @@ export function generateKickstartXML(
   partitions: PartitionRecommendation,
   hostname: string,
   timezone: string,
+  bootType?: FirmwareType,
   username?: string,
   password?: string,
   wifiSSID?: string,
@@ -590,10 +591,14 @@ firewall --enabled
 network --bootproto=dhcp --onboot=on --hostname=${hostname}
 ${wifiSSID ? `network --device=wlan0 --bootproto=dhcp --onboot=on --ssid=${wifiSSID} --password=${wifiPassword}` : ''}
 
+# Boot Configuration
+bootloader --location=${bootType === 'uefi' ? 'efi' : 'mbr'} --boot-drive=/dev/sda
+
 # Partitioning
 zerombr
 clearpart --all --initlabel
-part /boot/efi --fstype=efi --size=${Math.round(partitions.efi * 1024)}
+${bootType === 'uefi' ? 'part pmbr_boot --fstype=biosboot --size=1' : ''}
+${bootType === 'uefi' ? `part /boot/efi --fstype=efi --size=${Math.round(partitions.efi * 1024)}` : ''}
 part /boot --fstype=${distro.filesystem} --size=${Math.round(partitions.boot * 1024)}
 part / --fstype=${distro.filesystem} --size=${Math.round(partitions.root * 1024)}
 part swap --size=${Math.round(partitions.swap * 1024)}
@@ -1069,5 +1074,163 @@ export function getAutoConfigRecommendation(processorId: string): AutoConfigReco
     distro: "debian",
     useHibernation: false,
     notes: ["Configuração padrão aplicada"]
+  };
+}
+
+
+// Boot Type Detection and Recommendation
+export interface BootTypeRecommendation {
+  bootType: FirmwareType;
+  partitionTable: "MBR" | "GPT";
+  requiresEFI: boolean;
+  reason: string;
+  alternatives: FirmwareType[];
+  warnings: string[];
+}
+
+/**
+ * Detecta e recomenda o tipo de boot ideal baseado no hardware
+ * @param processorId - ID do processador
+ * @param diskSizeGB - Tamanho do disco em GB
+ * @param diskType - Tipo de disco (SSD/HDD)
+ * @returns Recomendação de tipo de boot
+ */
+export function detectBootType(
+  processorId: string,
+  diskSizeGB: number,
+  diskType: DiskType
+): BootTypeRecommendation {
+  const processor = PROCESSORS[processorId];
+  
+  // Validar se disco é maior que 2TB (limite de MBR)
+  const diskExceeds2TB = diskSizeGB > 2000;
+  
+  // Processadores modernos (2015+) - UEFI/GPT
+  if (processor?.releaseYear && processor.releaseYear >= 2015) {
+    return {
+      bootType: "uefi",
+      partitionTable: "GPT",
+      requiresEFI: true,
+      reason: "Processador moderno (2015+) com suporte completo a UEFI/GPT",
+      alternatives: ["gpt"],
+      warnings: diskExceeds2TB ? [] : ["Você pode usar GPT mesmo em discos menores para futuras expansões"]
+    };
+  }
+  
+  // Processadores intermediários (2009-2014)
+  if (processor?.releaseYear && processor.releaseYear >= 2009 && processor.releaseYear < 2015) {
+    // Se disco > 2TB, GPT é obrigatório
+    if (diskExceeds2TB) {
+      return {
+        bootType: "gpt",
+        partitionTable: "GPT",
+        requiresEFI: false,
+        reason: "Disco > 2TB requer GPT. Processador suporta BIOS legado com GPT",
+        alternatives: ["uefi"],
+        warnings: [
+          "Alguns BIOS antigos podem ter problemas com GPT",
+          "Considere atualizar firmware se disponível"
+        ]
+      };
+    }
+    
+    // Disco <= 2TB, BIOS/MBR é seguro
+    return {
+      bootType: "bios",
+      partitionTable: "MBR",
+      requiresEFI: false,
+      reason: "Processador intermediário (2009-2014) com BIOS/MBR compatível",
+      alternatives: ["gpt"],
+      warnings: ["Se o BIOS suportar UEFI, considere usar GPT para melhor compatibilidade futura"]
+    };
+  }
+  
+  // Processadores antigos (2003-2008)
+  if (processor?.releaseYear && processor.releaseYear >= 2003 && processor.releaseYear < 2009) {
+    if (diskExceeds2TB) {
+      return {
+        bootType: "gpt",
+        partitionTable: "GPT",
+        requiresEFI: false,
+        reason: "Disco > 2TB requer GPT. Usando BIOS legado com GPT",
+        alternatives: [],
+        warnings: [
+          "BIOS muito antigo pode não reconhecer GPT",
+          "Considere usar disco menor ou atualizar hardware"
+        ]
+      };
+    }
+    
+    return {
+      bootType: "bios",
+      partitionTable: "MBR",
+      requiresEFI: false,
+      reason: "Processador antigo (2003-2008) requer BIOS/MBR",
+      alternatives: [],
+      warnings: [
+        "Limite máximo de 2TB por disco",
+        "Máximo de 4 partições primárias",
+        "Considere usar distribuição 32-bit se disponível"
+      ]
+    };
+  }
+  
+  // Processadores muito antigos (2001-2002)
+  if (processor?.releaseYear && processor.releaseYear <= 2002) {
+    return {
+      bootType: "mbr",
+      partitionTable: "MBR",
+      requiresEFI: false,
+      reason: "Processador muito antigo (2001-2002) requer MBR puro",
+      alternatives: [],
+      warnings: [
+        "Limite máximo de 2TB por disco",
+        "Máximo de 4 partições primárias",
+        "Considere usar distribuição 32-bit",
+        "Hardware pode ter limitações severas"
+      ]
+    };
+  }
+  
+  // Processador desconhecido - usar padrão seguro
+  return {
+    bootType: "uefi",
+    partitionTable: "GPT",
+    requiresEFI: true,
+    reason: "Processador desconhecido, usando configuração moderna padrão",
+    alternatives: ["bios", "gpt"],
+    warnings: ["Verifique as especificações do seu processador para melhor recomendação"]
+  };
+}
+
+/**
+ * Valida compatibilidade entre boot type, firmware e tamanho de disco
+ */
+export function validateBootTypeCompatibility(
+  bootType: FirmwareType,
+  diskSizeGB: number,
+  processorId: string
+): { valid: boolean; issues: string[] } {
+  const issues: string[] = [];
+  const processor = PROCESSORS[processorId];
+  
+  // Validar limite de 2TB para MBR
+  if ((bootType === "bios" || bootType === "mbr") && diskSizeGB > 2000) {
+    issues.push("MBR/BIOS não suporta discos maiores que 2TB. Seu disco tem " + diskSizeGB + "GB");
+  }
+  
+  // Validar processador muito antigo com UEFI
+  if (bootType === "uefi" && processor?.releaseYear && processor.releaseYear < 2009) {
+    issues.push("Processadores anteriores a 2009 podem não suportar UEFI. Considere usar BIOS/MBR");
+  }
+  
+  // Validar processador muito antigo com GPT
+  if ((bootType === "gpt" || bootType === "uefi") && processor?.releaseYear && processor.releaseYear < 2003) {
+    issues.push("Processadores muito antigos podem ter problemas com GPT");
+  }
+  
+  return {
+    valid: issues.length === 0,
+    issues
   };
 }

@@ -32,6 +32,8 @@ import {
   calculateAdvancedPartitions,
   generateAdvancedKickstart,
   getAutoConfigRecommendation,
+  detectBootType,
+  validateBootTypeCompatibility,
   AdvancedPartitionConfig,
   FirmwareType,
   DiskType,
@@ -390,9 +392,23 @@ export default function PartitionCalculator() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* Firmware Type */}
                 <div className="space-y-1.5">
-                  <Label htmlFor="firmware" className="text-xs font-semibold">
-                    Firmware
-                  </Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="firmware" className="text-xs font-semibold">
+                      Firmware
+                    </Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        const rec = detectBootType(selectedProcessor, diskSize, selectedDiskType);
+                        setSelectedFirmware(rec.bootType);
+                        toast.success(`Boot: ${rec.bootType.toUpperCase()} - ${rec.reason}`);
+                      }}
+                      className="text-xs h-6 px-2 text-blue-600"
+                    >
+                      Auto
+                    </Button>
+                  </div>
                   <Select value={selectedFirmware} onValueChange={(v) => setSelectedFirmware(v as FirmwareType)}>
                     <SelectTrigger id="firmware" className="h-8 text-sm">
                       <SelectValue />

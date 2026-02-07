@@ -69,3 +69,12 @@
 - [x] Integrar VisitorGlobe com dados reais do tRPC
 - [x] Testar e validar dados em tempo real
 - [ ] Adicionar cache para performance
+
+
+## Boot Type Detection & Configuration (Current Session)
+- [x] Analisar configuração atual de firmware (UEFI/BIOS)
+- [x] Adicionar detecção automática de tipo de boot (BIOS, MBR, GPT)
+- [x] Integrar tipo de boot aos parâmetros de instalação
+- [x] Atualizar UI para exibir seleção de boot type
+- [x] Adicionar validação de compatibilidade boot/firmware
+- [x] Gerar scripts de instalação com boot type correto
