@@ -281,3 +281,72 @@ export async function getAuditLog(limit: number = 100) {
     return [];
   }
 }
+
+
+// Enhanced visitor stats with geographic data
+export async function getVisitorStatsWithCoordinates() {
+  const db = await getDb();
+  if (!db) return null;
+
+  try {
+    const totalVisitors = await db.select({ count: sql`COUNT(*)` }).from(visitors);
+    
+    // Get top countries with their coordinates
+    const topCountries = await db.select({
+      country: visitors.country,
+      countryCode: visitors.countryCode,
+      count: sql`COUNT(*) as count`,
+      latitude: sql`MAX(${visitors.latitude})`,
+      longitude: sql`MAX(${visitors.longitude})`,
+    })
+      .from(visitors)
+      .where(sql`${visitors.country} IS NOT NULL`)
+      .groupBy(visitors.country, visitors.countryCode)
+      .orderBy(desc(sql`count`))
+      .limit(20);
+    
+    const topContinents = await db.select({
+      continent: visitors.continent,
+      count: sql`COUNT(*) as count`,
+    })
+      .from(visitors)
+      .where(sql`${visitors.continent} IS NOT NULL`)
+      .groupBy(visitors.continent)
+      .orderBy(desc(sql`count`))
+      .limit(10);
+
+    return {
+      totalVisitors: (totalVisitors[0]?.count as number) || 0,
+      topCountries: topCountries.map(c => ({
+        country: c.country,
+        countryCode: c.countryCode,
+        count: c.count as number,
+        latitude: c.latitude ? parseFloat(c.latitude as string) : null,
+        longitude: c.longitude ? parseFloat(c.longitude as string) : null,
+      })),
+      topContinents,
+    };
+  } catch (error) {
+    console.error("[Database] Failed to get visitor stats with coordinates:", error);
+    return null;
+  }
+}
+
+// Get visitor stats for Brazil
+export async function getBrazilVisitorStats() {
+  const db = await getDb();
+  if (!db) return null;
+
+  try {
+    const brazilVisitors = await db.select({ count: sql`COUNT(*)` })
+      .from(visitors)
+      .where(sql`${visitors.country} = 'Brazil'`);
+    
+    return {
+      totalBrazilVisitors: (brazilVisitors[0]?.count as number) || 0,
+    };
+  } catch (error) {
+    console.error("[Database] Failed to get Brazil visitor stats:", error);
+    return null;
+  }
+}

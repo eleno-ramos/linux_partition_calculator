@@ -3,7 +3,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import { z } from "zod";
-import { trackVisitor, getVisitorStats, addReview, getReviews, getReviewStats, trackShare, getShareStats } from "./db";
+import { trackVisitor, getVisitorStats, addReview, getReviews, getReviewStats, trackShare, getShareStats, getVisitorStatsWithCoordinates, getBrazilVisitorStats } from "./db";
 
 export const appRouter = router({
   system: systemRouter,
@@ -39,6 +39,14 @@ export const appRouter = router({
 
     getStats: publicProcedure.query(async () => {
       return await getVisitorStats();
+    }),
+
+    getStatsWithCoordinates: publicProcedure.query(async () => {
+      return await getVisitorStatsWithCoordinates();
+    }),
+
+    getBrazilStats: publicProcedure.query(async () => {
+      return await getBrazilVisitorStats();
     }),
   }),
 

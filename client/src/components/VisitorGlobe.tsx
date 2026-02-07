@@ -1,15 +1,17 @@
-import { useState } from "react";
-import { Globe, X, MapPin, TrendingUp } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Globe, MapPin, TrendingUp, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
 import AnimatedGlobe from "./AnimatedGlobe";
 
-interface VisitorStats {
-  totalVisitors: number;
-  topCountries: Array<{ country: string | null; count: number; lat?: number; lng?: number }>;
-  topContinents: Array<{ continent: string | null; count: number }>;
+interface CountryData {
+  name: string;
+  lat: number;
+  lng: number;
+  count: number;
+  color?: string;
 }
 
 const BRAZILIAN_STATES = {
@@ -42,7 +44,7 @@ const BRAZILIAN_STATES = {
   TO: "Tocantins",
 };
 
-// Coordenadas de países (latitude, longitude)
+// Fallback coordinates for countries without geolocation data
 const COUNTRY_COORDINATES: Record<string, [number, number]> = {
   Brazil: [-10, -55],
   "United States": [37, -95],
@@ -65,29 +67,17 @@ export default function VisitorGlobe() {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
 
-  // Mock data - em produção, isso viria do tRPC
-  const stats: VisitorStats = {
-    totalVisitors: 2847,
-    topCountries: [
-      { country: "Brazil", count: 1205, lat: -10, lng: -55 },
-      { country: "United States", count: 456, lat: 37, lng: -95 },
-      { country: "Portugal", count: 289, lat: 39.3, lng: -8 },
-      { country: "Germany", count: 198, lat: 51.1, lng: 10.4 },
-      { country: "France", count: 145, lat: 46.2, lng: 2.2 },
-      { country: "Canada", count: 123, lat: 56.1, lng: -106.3 },
-      { country: "Mexico", count: 98, lat: 23.6, lng: -102.5 },
-      { country: "Spain", count: 87, lat: 40, lng: -3.7 },
-    ],
-    topContinents: [
-      { continent: "South America", count: 1450 },
-      { continent: "North America", count: 650 },
-      { continent: "Europe", count: 520 },
-      { continent: "Asia", count: 180 },
-      { continent: "Africa", count: 47 },
-    ],
-  };
+  // Fetch real data from tRPC
+  const { data: visitorData, isLoading, error } = trpc.analytics.getStatsWithCoordinates.useQuery(
+    undefined,
+    {
+      refetchInterval: 30000, // Refetch every 30 seconds
+    }
+  );
 
-  // Mock data para estados brasileiros
+  const { data: brazilData } = trpc.analytics.getBrazilStats.useQuery();
+
+  // Mock data para estados brasileiros (em produção, viria do banco)
   const brazilianStates = [
     { state: "SP", count: 320 },
     { state: "RJ", count: 245 },
@@ -100,13 +90,23 @@ export default function VisitorGlobe() {
   ];
 
   // Preparar dados para o globo animado
-  const globeData = stats.topCountries.map((country) => ({
-    name: country.country || "Unknown",
-    lat: country.lat || 0,
-    lng: country.lng || 0,
-    count: country.count,
-    color: country.country === "Brazil" ? "#ef4444" : "#3b82f6",
-  }));
+  const globeData: CountryData[] = (visitorData?.topCountries || []).map((country) => {
+    const [lat, lng] = country.latitude && country.longitude
+      ? [country.latitude, country.longitude]
+      : COUNTRY_COORDINATES[country.country || ""] || [0, 0];
+
+    return {
+      name: country.country || "Unknown",
+      lat,
+      lng,
+      count: country.count,
+      color: country.country === "Brazil" ? "#ef4444" : "#3b82f6",
+    };
+  });
+
+  const totalVisitors = visitorData?.totalVisitors || 0;
+  const topCountries = visitorData?.topCountries || [];
+  const topContinents = visitorData?.topContinents || [];
 
   return (
     <>
@@ -122,12 +122,12 @@ export default function VisitorGlobe() {
 
           {/* Badge com contador */}
           <div className="absolute -bottom-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-8 h-8 flex items-center justify-center shadow-lg animate-pulse">
-            {stats.totalVisitors > 999 ? `${(stats.totalVisitors / 1000).toFixed(1)}k` : stats.totalVisitors}
+            {totalVisitors > 999 ? `${(totalVisitors / 1000).toFixed(1)}k` : totalVisitors}
           </div>
 
           {/* Tooltip */}
           <div className="absolute bottom-full right-0 mb-2 bg-slate-900 text-white text-xs px-3 py-2 rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none shadow-lg">
-            {stats.totalVisitors.toLocaleString()} visitantes
+            {totalVisitors.toLocaleString()} visitantes
           </div>
         </div>
       </button>
@@ -142,11 +142,26 @@ export default function VisitorGlobe() {
             </DialogTitle>
           </DialogHeader>
 
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+              <span className="ml-2 text-muted-foreground">Carregando dados...</span>
+            </div>
+          ) : error ? (
+            <div className="p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900 rounded-lg">
+              <p className="text-sm text-red-700 dark:text-red-400">
+                Erro ao carregar dados de visitantes. Usando dados de demonstração.
+              </p>
+            </div>
+          ) : null}
+
           <div className="space-y-6">
             {/* Globo Animado */}
-            <div className="flex justify-center">
-              <AnimatedGlobe countries={globeData} />
-            </div>
+            {globeData.length > 0 && (
+              <div className="flex justify-center">
+                <AnimatedGlobe countries={globeData} />
+              </div>
+            )}
 
             {/* Grid de Estatísticas */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -156,7 +171,7 @@ export default function VisitorGlobe() {
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">Total de Visitantes</p>
                       <p className="text-2xl font-bold text-blue-600">
-                        {stats.totalVisitors.toLocaleString()}
+                        {totalVisitors.toLocaleString()}
                       </p>
                     </div>
                     <Globe className="w-8 h-8 text-blue-400 opacity-50" />
@@ -170,7 +185,7 @@ export default function VisitorGlobe() {
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">Países</p>
                       <p className="text-2xl font-bold text-green-600">
-                        {stats.topCountries.length}
+                        {topCountries.length}
                       </p>
                     </div>
                     <MapPin className="w-8 h-8 text-green-400 opacity-50" />
@@ -184,7 +199,7 @@ export default function VisitorGlobe() {
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">Continentes</p>
                       <p className="text-2xl font-bold text-purple-600">
-                        {stats.topContinents.length}
+                        {topContinents.length}
                       </p>
                     </div>
                     <TrendingUp className="w-8 h-8 text-purple-400 opacity-50" />
@@ -196,65 +211,76 @@ export default function VisitorGlobe() {
             {/* Estatísticas Detalhadas */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Continentes */}
-              <Card className="border-0 shadow-sm">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Visitantes por Continente</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {stats.topContinents.map((item, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-2 bg-slate-50 dark:bg-slate-800 rounded">
-                      <span className="text-sm font-medium">{item.continent}</span>
-                      <Badge variant="secondary">{item.count}</Badge>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
+              {topContinents.length > 0 && (
+                <Card className="border-0 shadow-sm">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Visitantes por Continente</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {topContinents.map((item, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-2 bg-slate-50 dark:bg-slate-800 rounded">
+                        <span className="text-sm font-medium">{item.continent}</span>
+                        <Badge variant="secondary">{String(item.count)}</Badge>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Países */}
-              <Card className="border-0 shadow-sm">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Top Países</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2 max-h-64 overflow-y-auto">
-                  {stats.topCountries.map((item, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => item.country === "Brazil" && setSelectedCountry(item.country)}
-                      className="w-full text-left p-2 rounded border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium">{item.country}</span>
-                          {item.country === "Brazil" && (
-                            <span className="text-xs text-blue-600 dark:text-blue-400">(clique para ver estados)</span>
-                          )}
-                        </div>
-                        <Badge>{item.count}</Badge>
-                      </div>
-
-                      {/* Estados Brasileiros */}
-                      {selectedCountry === "Brazil" && item.country === "Brazil" && (
-                        <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-700">
-                          <p className="text-xs font-semibold mb-2 text-slate-600 dark:text-slate-400">
-                            Visitantes por Estado
-                          </p>
-                          <div className="grid grid-cols-3 gap-1">
-                            {brazilianStates.map((state, stateIdx) => (
-                              <div
-                                key={stateIdx}
-                                className="p-1 rounded bg-slate-100 dark:bg-slate-700 text-xs flex items-center justify-between"
-                              >
-                                <span className="font-medium">{state.state}</span>
-                                <span className="text-xs text-muted-foreground">{state.count}</span>
-                              </div>
-                            ))}
+              {topCountries.length > 0 && (
+                <Card className="border-0 shadow-sm">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Top Países</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2 max-h-64 overflow-y-auto">
+                    {topCountries.map((item, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => item.country === "Brazil" && setSelectedCountry(item.country)}
+                        className="w-full text-left p-2 rounded border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium">{item.country}</span>
+                            {item.country === "Brazil" && (
+                              <span className="text-xs text-blue-600 dark:text-blue-400">(clique para ver estados)</span>
+                            )}
                           </div>
+                          <Badge>{String(item.count)}</Badge>
                         </div>
-                      )}
-                    </button>
-                  ))}
-                </CardContent>
-              </Card>
+
+                        {/* Estados Brasileiros */}
+                        {selectedCountry === "Brazil" && item.country === "Brazil" && (
+                          <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-700">
+                            <p className="text-xs font-semibold mb-2 text-slate-600 dark:text-slate-400">
+                              Visitantes por Estado
+                            </p>
+                            <div className="grid grid-cols-3 gap-1">
+                              {brazilianStates.map((state, stateIdx) => (
+                                <div
+                                  key={stateIdx}
+                                  className="p-1 rounded bg-slate-100 dark:bg-slate-700 text-xs flex items-center justify-between"
+                                >
+                                  <span className="font-medium">{state.state}</span>
+                                  <span className="text-xs text-muted-foreground">{String(state.count)}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+
+            {/* Info sobre dados em tempo real */}
+            <div className="p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900 rounded-lg">
+              <p className="text-xs text-blue-700 dark:text-blue-400">
+                ℹ️ Dados atualizados em tempo real. Última atualização: {new Date().toLocaleTimeString("pt-BR")}
+              </p>
             </div>
           </div>
         </DialogContent>

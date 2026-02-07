@@ -60,3 +60,12 @@
 - [x] Implementar tooltips com informações de país
 - [x] Adicionar animação de rotação suave
 - [ ] Integrar com dados reais do banco de dados
+
+
+## Integração de Dados Reais - VisitorGlobe (Current Session)
+- [x] Analisar schema do banco e tabela de visitantes
+- [x] Criar queries de banco para visitantes por país/estado
+- [x] Implementar procedures tRPC para dados de visitantes
+- [x] Integrar VisitorGlobe com dados reais do tRPC
+- [x] Testar e validar dados em tempo real
+- [ ] Adicionar cache para performance
