@@ -2,6 +2,9 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Cpu, HardDrive, Zap, Shield, Download, BookOpen } from "lucide-react";
 import PartitionCalculator from "@/components/PartitionCalculator";
 import VisitorGlobe from "@/components/VisitorGlobe";
+import ReviewForm from "@/components/ReviewForm";
+import ReviewsList from "@/components/ReviewsList";
+import ShareButtons from "@/components/ShareButtons";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -173,6 +176,22 @@ export default function Home() {
                 </ul>
               </CardContent>
             </Card>
+          </div>
+
+          {/* Reviews and Share Section */}
+          <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <ReviewsList />
+            </div>
+            <div className="space-y-4">
+              <ReviewForm />
+              <Card className="border-0 shadow-sm">
+                <CardContent className="p-4">
+                  <h3 className="font-semibold text-sm mb-3">Compartilhe com Amigos</h3>
+                  <ShareButtons title="Linux Partition Calculator" text="Descubra a melhor forma de particionar seu disco para Linux!" />
+                </CardContent>
+              </Card>
+            </div>
           </div>
 
           {/* Footer Message */}
