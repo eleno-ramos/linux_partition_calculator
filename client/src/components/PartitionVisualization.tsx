@@ -1,4 +1,6 @@
 import { PartitionRecommendation } from "@/lib/partitionData";
+import { Card, CardContent } from "@/components/ui/card";
+import { HardDrive, Zap } from "lucide-react";
 
 interface PartitionVisualizationProps {
   partitions: PartitionRecommendation;
@@ -7,102 +9,121 @@ interface PartitionVisualizationProps {
 export default function PartitionVisualization({
   partitions,
 }: PartitionVisualizationProps) {
-  const getColor = (index: number) => {
-    const colors = [
-      "bg-blue-500",
-      "bg-purple-500",
-      "bg-pink-500",
-      "bg-green-500",
-      "bg-orange-500",
-    ];
-    return colors[index % colors.length];
-  };
-
   const partitionList = [
-    { name: "EFI", size: partitions.efi, color: "bg-blue-500" },
-    { name: "Boot", size: partitions.boot, color: "bg-purple-500" },
-    { name: "Root (/)", size: partitions.root, color: "bg-pink-500" },
+    { name: "EFI", size: partitions.efi, color: "bg-blue-500", icon: "🔵" },
+    { name: "Boot", size: partitions.boot, color: "bg-purple-500", icon: "🟣" },
+    { name: "Root (/)", size: partitions.root, color: "bg-pink-500", icon: "🔴" },
     ...(partitions.swap > 0
-      ? [{ name: "Swap", size: partitions.swap, color: "bg-green-500" }]
+      ? [{ name: "Swap", size: partitions.swap, color: "bg-green-500", icon: "🟢" }]
       : []),
-    { name: "Home", size: partitions.home, color: "bg-orange-500" },
+    { name: "Home", size: partitions.home, color: "bg-orange-500", icon: "🟠" },
   ];
 
+  const totalPercent = 100;
+
   return (
-    <div className="space-y-4">
-      {/* Visual Bar */}
-      <div className="flex h-12 rounded-lg overflow-hidden shadow-md">
-        {partitionList.map((partition, index) => (
-          <div
-            key={partition.name}
-            className={`${partition.color} transition-all hover:opacity-80`}
-            style={{
-              width: `${(partition.size / partitions.total) * 100}%`,
-              minWidth: partition.size > 0 ? "2px" : "0px",
-            }}
-            title={`${partition.name}: ${partition.size.toFixed(2)}GB (${(
-              (partition.size / partitions.total) *
-              100
-            ).toFixed(1)}%)`}
-          />
-        ))}
-      </div>
+    <Card className="border-0 shadow-sm">
+      <CardContent className="p-4 space-y-4">
+        {/* Title */}
+        <div className="flex items-center gap-2">
+          <HardDrive className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+          <h3 className="font-semibold text-base">Visualização do Disco</h3>
+        </div>
 
-      {/* Legend */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-        {partitionList.map((partition) => (
-          <div key={partition.name} className="flex items-center gap-2">
-            <div className={`w-3 h-3 rounded-sm ${partition.color}`} />
-            <div className="text-sm">
-              <p className="font-semibold">{partition.name}</p>
-              <p className="text-xs text-muted-foreground">
-                {partition.size.toFixed(2)}GB
-              </p>
+        {/* Visual Bar - Improved */}
+        <div className="space-y-2">
+          <div className="flex h-10 rounded-lg overflow-hidden shadow-md bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+            {partitionList.map((partition) => (
+              <div
+                key={partition.name}
+                className={`${partition.color} transition-all hover:opacity-90 cursor-pointer relative group`}
+                style={{
+                  width: `${(partition.size / partitions.total) * 100}%`,
+                  minWidth: partition.size > 0 ? "4px" : "0px",
+                }}
+                title={`${partition.name}: ${partition.size.toFixed(2)}GB`}
+              >
+                {/* Tooltip */}
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                  {partition.name}: {partition.size.toFixed(2)}GB ({((partition.size / partitions.total) * 100).toFixed(1)}%)
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground text-center">
+            Passe o mouse sobre as seções para ver detalhes
+          </p>
+        </div>
+
+        {/* Legend - Grid Layout */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+          {partitionList.map((partition) => (
+            <div
+              key={partition.name}
+              className="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 transition-colors"
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <div className={`w-2 h-2 rounded-full ${partition.color}`} />
+                <p className="font-semibold text-xs">{partition.name}</p>
+              </div>
+              <div className="ml-4">
+                <p className="text-xs font-bold text-slate-900 dark:text-white">
+                  {partition.size.toFixed(1)}GB
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {((partition.size / partitions.total) * 100).toFixed(1)}%
+                </p>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
 
-      {/* Summary */}
-      <div className="p-4 bg-muted rounded-lg space-y-3">
-        <p className="text-sm">
-          <span className="font-semibold">Total do disco:</span>{" "}
-          {partitions.total.toFixed(2)}GB
-        </p>
-        <p className="text-sm">
-          <span className="font-semibold">Espaco para dados (/home):</span>{" "}
-          {partitions.home.toFixed(2)}GB (
-          {((partitions.home / partitions.total) * 100).toFixed(1)}%)
-        </p>
-      </div>
+        {/* Summary Stats */}
+        <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-200 dark:border-slate-700">
+          <div className="text-center">
+            <p className="text-xs text-muted-foreground">Total do Disco</p>
+            <p className="text-lg font-bold text-slate-900 dark:text-white">
+              {partitions.total.toFixed(1)} GB
+            </p>
+          </div>
+          <div className="text-center">
+            <p className="text-xs text-muted-foreground">Espaço para Dados</p>
+            <p className="text-lg font-bold text-orange-600 dark:text-orange-400">
+              {partitions.home.toFixed(1)} GB
+            </p>
+          </div>
+        </div>
 
-      {/* Partition Notes */}
-      <div className="space-y-2">
-        {partitions.efi > 0 && (
-          <div className="p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg">
-            <p className="text-sm font-semibold text-blue-900 dark:text-blue-100">EFI ({partitions.efi.toFixed(2)}GB)</p>
-            <p className="text-xs text-blue-800 dark:text-blue-200 mt-1">Particao de boot UEFI. Necessaria para sistemas modernos com UEFI.</p>
+        {/* Partition Notes - Compact */}
+        <div className="space-y-1.5 pt-2 border-t border-slate-200 dark:border-slate-700">
+          <div className="flex items-start gap-2 text-xs">
+            <span className="text-blue-600 dark:text-blue-400 font-bold flex-shrink-0">•</span>
+            <span className="text-slate-600 dark:text-slate-400">
+              <span className="font-semibold text-slate-900 dark:text-white">EFI/Boot:</span> Inicialização do sistema
+            </span>
           </div>
-        )}
-        <div className="p-3 bg-purple-50 dark:bg-purple-950 border border-purple-200 dark:border-purple-800 rounded-lg">
-          <p className="text-sm font-semibold text-purple-900 dark:text-purple-100">Boot ({partitions.boot.toFixed(2)}GB)</p>
-          <p className="text-xs text-purple-800 dark:text-purple-200 mt-1">Contem o kernel e arquivos de boot. Mantem separado para seguranca e facilita atualizacoes.</p>
-        </div>
-        <div className="p-3 bg-pink-50 dark:bg-pink-950 border border-pink-200 dark:border-pink-800 rounded-lg">
-          <p className="text-sm font-semibold text-pink-900 dark:text-pink-100">Root (/) ({partitions.root.toFixed(2)}GB)</p>
-          <p className="text-xs text-pink-800 dark:text-pink-200 mt-1">Sistema operacional, aplicacoes e bibliotecas. Tamanho critico para estabilidade.</p>
-        </div>
-        {partitions.swap > 0 && (
-          <div className="p-3 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg">
-            <p className="text-sm font-semibold text-green-900 dark:text-green-100">Swap ({partitions.swap.toFixed(2)}GB)</p>
-            <p className="text-xs text-green-800 dark:text-green-200 mt-1">Memoria virtual em disco. Melhora performance quando RAM e insuficiente.</p>
+          <div className="flex items-start gap-2 text-xs">
+            <span className="text-pink-600 dark:text-pink-400 font-bold flex-shrink-0">•</span>
+            <span className="text-slate-600 dark:text-slate-400">
+              <span className="font-semibold text-slate-900 dark:text-white">Root (/):</span> Sistema operacional
+            </span>
           </div>
-        )}
-        <div className="p-3 bg-orange-50 dark:bg-orange-950 border border-orange-200 dark:border-orange-800 rounded-lg">
-          <p className="text-sm font-semibold text-orange-900 dark:text-orange-100">Home ({partitions.home.toFixed(2)}GB)</p>
-          <p className="text-xs text-orange-800 dark:text-orange-200 mt-1">Dados pessoais, documentos e configuracoes do usuario. Pode ser preservada em reinstalacoes.</p>
+          {partitions.swap > 0 && (
+            <div className="flex items-start gap-2 text-xs">
+              <span className="text-green-600 dark:text-green-400 font-bold flex-shrink-0">•</span>
+              <span className="text-slate-600 dark:text-slate-400">
+                <span className="font-semibold text-slate-900 dark:text-white">Swap:</span> Memória virtual
+              </span>
+            </div>
+          )}
+          <div className="flex items-start gap-2 text-xs">
+            <span className="text-orange-600 dark:text-orange-400 font-bold flex-shrink-0">•</span>
+            <span className="text-slate-600 dark:text-slate-400">
+              <span className="font-semibold text-slate-900 dark:text-white">Home:</span> Dados do usuário
+            </span>
+          </div>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

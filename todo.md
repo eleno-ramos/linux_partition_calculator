@@ -40,3 +40,14 @@
 ## Current Session Tasks
 - [x] Gerar arquivo render.yaml para deploy
 - [x] Gerar arquivo MARKETING_TAGS.md com hashtags e público-alvo
+
+
+## Interface Improvements (Current Session)
+- [x] Analisar interface atual e identificar pontos de melhoria
+- [x] Refatorar layout principal com design mais limpo
+- [x] Simplificar navegação entre abas (5 abas principais)
+- [x] Melhorar componentes de formulário (inputs mais compactos)
+- [x] Otimizar visualização de resultados e partições
+- [x] Adicionar melhor feedback visual (loading states, success messages)
+- [ ] Implementar onboarding/tutorial para novos usuários
+- [ ] Testar responsividade em todos os dispositivos

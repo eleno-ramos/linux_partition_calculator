@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings, Download, Copy, Moon, Sun, History, Sliders } from "lucide-react";
+import { Download, Copy, Moon, Sun, History, ChevronDown } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import LanguageToggle from "./LanguageToggle";
@@ -73,7 +73,6 @@ export default function PartitionCalculator() {
   const [hibernation, setHibernation] = useState(false);
   const [useMinimum, setUseMinimum] = useState(false);
   const [useLVM, setUseLVM] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
   const [hostname, setHostname] = useState("linux-system");
   const [timezone, setTimezone] = useState("UTC");
   const [savedConfigs, setSavedConfigs] = useState<SavedConfiguration[]>([]);
@@ -83,6 +82,7 @@ export default function PartitionCalculator() {
   const [advancedMode, setAdvancedMode] = useState(false);
   const [advancedConfig, setAdvancedConfig] = useState<AdvancedPartitionConfig | null>(null);
   const [autoUpdateEnabled, setAutoUpdateEnabled] = useState(true);
+  const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
 
   // Load saved configurations from localStorage
   useEffect(() => {
@@ -182,7 +182,7 @@ export default function PartitionCalculator() {
       },
     };
 
-    const updated = [newConfig, ...savedConfigs].slice(0, 10); // Keep last 10
+    const updated = [newConfig, ...savedConfigs].slice(0, 10);
     setSavedConfigs(updated);
     localStorage.setItem("partition_configs", JSON.stringify(updated));
     toast.success("Configuração salva com sucesso!");
@@ -212,62 +212,66 @@ export default function PartitionCalculator() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Top Bar with Theme Toggle and History */}
-      <div className="flex gap-2 justify-end">
-        <LanguageToggle />
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setShowHistory(!showHistory)}
-          className="gap-2"
-        >
-          <History className="w-4 h-4" />
-          Histórico ({savedConfigs.length})
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={toggleTheme}
-          className="gap-2"
-        >
-          {theme === "dark" ? (
-            <>
-              <Sun className="w-4 h-4" />
-              Claro
-            </>
-          ) : (
-            <>
-              <Moon className="w-4 h-4" />
-              Escuro
-            </>
-          )}
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={saveConfiguration}
-          className="gap-2"
-        >
-          <Download className="w-4 h-4" />
-          Salvar
-        </Button>
+    <div className="space-y-4">
+      {/* Compact Top Bar */}
+      <div className="flex flex-wrap gap-2 justify-between items-center">
+        <div className="flex gap-2">
+          <LanguageToggle />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowHistory(!showHistory)}
+            className="gap-1 text-xs"
+          >
+            <History className="w-3 h-3" />
+            <span className="hidden sm:inline">Histórico</span>
+            <span className="text-xs bg-blue-100 dark:bg-blue-900 px-1.5 rounded">
+              {savedConfigs.length}
+            </span>
+          </Button>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={toggleTheme}
+            className="gap-1 text-xs"
+          >
+            {theme === "dark" ? (
+              <>
+                <Sun className="w-3 h-3" />
+                <span className="hidden sm:inline">Claro</span>
+              </>
+            ) : (
+              <>
+                <Moon className="w-3 h-3" />
+                <span className="hidden sm:inline">Escuro</span>
+              </>
+            )}
+          </Button>
+          <Button
+            onClick={saveConfiguration}
+            size="sm"
+            className="gap-1 text-xs bg-blue-600 hover:bg-blue-700"
+          >
+            <Download className="w-3 h-3" />
+            <span className="hidden sm:inline">Salvar</span>
+          </Button>
+        </div>
       </div>
 
-      {/* History Panel */}
+      {/* History Panel - Compact */}
       {showHistory && savedConfigs.length > 0 && (
-        <Card className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900">
-          <CardHeader>
-            <CardTitle className="text-base">Histórico de Configurações</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
+        <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
+          <CardContent className="p-3 space-y-2">
             {savedConfigs.map((config) => (
               <div
                 key={config.id}
-                className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700"
+                className="flex items-center justify-between p-2 bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                onClick={() => loadConfiguration(config)}
               >
-                <div className="flex-1 cursor-pointer" onClick={() => loadConfiguration(config)}>
-                  <p className="font-medium text-sm">{config.name}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-xs truncate">{config.name}</p>
                   <p className="text-xs text-muted-foreground">
                     {new Date(config.timestamp).toLocaleString("pt-BR")}
                   </p>
@@ -275,10 +279,13 @@ export default function PartitionCalculator() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => deleteConfiguration(config.id)}
-                  className="text-red-600 hover:text-red-700"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteConfiguration(config.id);
+                  }}
+                  className="text-red-600 hover:text-red-700 text-xs"
                 >
-                  Remover
+                  ✕
                 </Button>
               </div>
             ))}
@@ -286,30 +293,33 @@ export default function PartitionCalculator() {
         </Card>
       )}
 
+      {/* Main Tabs */}
       <Tabs defaultValue="calculator" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1 h-auto">
-          <TabsTrigger value="calculator">Calculadora</TabsTrigger>
-          <TabsTrigger value="advanced">Avançado</TabsTrigger>
-          <TabsTrigger value="validation">Validação</TabsTrigger>
-          <TabsTrigger value="partclone">Backup</TabsTrigger>
-          <TabsTrigger value="export">Exportar</TabsTrigger>
-          <TabsTrigger value="reviews">Avaliações</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1 h-auto p-1">
+          <TabsTrigger value="calculator" className="text-xs sm:text-sm">Calculadora</TabsTrigger>
+          <TabsTrigger value="results" className="text-xs sm:text-sm">Resultado</TabsTrigger>
+          <TabsTrigger value="export" className="text-xs sm:text-sm">Exportar</TabsTrigger>
+          <TabsTrigger value="validation" className="text-xs sm:text-sm">Validação</TabsTrigger>
+          <TabsTrigger value="reviews" className="text-xs sm:text-sm">Avaliações</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="calculator" className="space-y-6">
-          {/* Input Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Configuração do Hardware</CardTitle>
-              <CardDescription>
+        {/* Calculator Tab - Simplified */}
+        <TabsContent value="calculator" className="space-y-4">
+          <Card className="border-0 shadow-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg">Configuração do Hardware</CardTitle>
+              <CardDescription className="text-xs">
                 Insira as especificações do seu computador
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <CardContent className="space-y-4">
+              {/* Grid - 2 columns on mobile, 3 on tablet, 4 on desktop */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* Disk Size */}
-                <div className="space-y-2">
-                  <Label htmlFor="disk-size">Tamanho do Disco (GB)</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="disk-size" className="text-xs font-semibold">
+                    Disco (GB)
+                  </Label>
                   <Input
                     id="disk-size"
                     type="number"
@@ -317,16 +327,15 @@ export default function PartitionCalculator() {
                     max="10000"
                     value={diskSize}
                     onChange={(e) => setDiskSize(Number(e.target.value))}
-                    className="w-full"
+                    className="h-8 text-sm"
                   />
-                  <p className="text-sm text-muted-foreground">
-                    Tamanho total do seu disco rígido
-                  </p>
                 </div>
 
                 {/* RAM Size */}
-                <div className="space-y-2">
-                  <Label htmlFor="ram-size">Memória RAM (GB)</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="ram-size" className="text-xs font-semibold">
+                    RAM (GB)
+                  </Label>
                   <Input
                     id="ram-size"
                     type="number"
@@ -334,18 +343,17 @@ export default function PartitionCalculator() {
                     max="256"
                     value={ramSize}
                     onChange={(e) => setRamSize(Number(e.target.value))}
-                    className="w-full"
+                    className="h-8 text-sm"
                   />
-                  <p className="text-sm text-muted-foreground">
-                    Quantidade de RAM do seu sistema
-                  </p>
                 </div>
 
                 {/* Distribution */}
-                <div className="space-y-2">
-                  <Label htmlFor="distro">Distribuição Linux</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="distro" className="text-xs font-semibold">
+                    Distribuição
+                  </Label>
                   <Select value={selectedDistro} onValueChange={setSelectedDistro}>
-                    <SelectTrigger id="distro">
+                    <SelectTrigger id="distro" className="h-8 text-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -356,36 +364,37 @@ export default function PartitionCalculator() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <p className="text-sm text-muted-foreground">
-                    {distro.description}
-                  </p>
                 </div>
 
                 {/* Processor */}
-                <div className="space-y-2">
-                  <Label htmlFor="processor">Processador</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="processor" className="text-xs font-semibold">
+                    Processador
+                  </Label>
                   <Select value={selectedProcessor} onValueChange={setSelectedProcessor}>
-                    <SelectTrigger id="processor">
+                    <SelectTrigger id="processor" className="h-8 text-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       {Object.values(PROCESSORS).map((p) => (
                         <SelectItem key={p.id} value={p.id}>
-                          {p.brand} - {p.architecture} ({p.bitness})
+                          {p.brand} - {p.architecture}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  <p className="text-sm text-muted-foreground">
-                    {processor.examples.join(", ")}
-                  </p>
                 </div>
+              </div>
 
+              {/* Second row - Firmware and Disk Type */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* Firmware Type */}
-                <div className="space-y-2">
-                  <Label htmlFor="firmware">Tipo de Firmware</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="firmware" className="text-xs font-semibold">
+                    Firmware
+                  </Label>
                   <Select value={selectedFirmware} onValueChange={(v) => setSelectedFirmware(v as FirmwareType)}>
-                    <SelectTrigger id="firmware">
+                    <SelectTrigger id="firmware" className="h-8 text-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -396,16 +405,15 @@ export default function PartitionCalculator() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <p className="text-sm text-muted-foreground">
-                    {firmware.description}
-                  </p>
                 </div>
 
                 {/* Disk Type */}
-                <div className="space-y-2">
-                  <Label htmlFor="disk-type">Tipo de Disco</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="disk-type" className="text-xs font-semibold">
+                    Tipo de Disco
+                  </Label>
                   <Select value={selectedDiskType} onValueChange={(v) => setSelectedDiskType(v as DiskType)}>
-                    <SelectTrigger id="disk-type">
+                    <SelectTrigger id="disk-type" className="h-8 text-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -416,141 +424,165 @@ export default function PartitionCalculator() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <p className="text-sm text-muted-foreground">
-                    {diskType.description}
-                  </p>
+                </div>
+
+                {/* Hostname */}
+                <div className="space-y-1.5">
+                  <Label htmlFor="hostname" className="text-xs font-semibold">
+                    Hostname
+                  </Label>
+                  <Input
+                    id="hostname"
+                    value={hostname}
+                    onChange={(e) => setHostname(e.target.value)}
+                    className="h-8 text-sm"
+                  />
+                </div>
+
+                {/* Timezone */}
+                <div className="space-y-1.5">
+                  <Label htmlFor="timezone" className="text-xs font-semibold">
+                    Timezone
+                  </Label>
+                  <Input
+                    id="timezone"
+                    value={timezone}
+                    onChange={(e) => setTimezone(e.target.value)}
+                    className="h-8 text-sm"
+                  />
                 </div>
               </div>
 
-              {/* Checkboxes */}
-              <div className="space-y-3 border-t pt-6">
-                <div className="flex items-center gap-3">
-                  <Checkbox
-                    id="hibernation"
-                    checked={hibernation}
-                    onCheckedChange={(checked) => setHibernation(checked as boolean)}
-                  />
-                  <Label htmlFor="hibernation" className="cursor-pointer">
-                    Ativar Hibernação (requer swap ≥ RAM)
-                  </Label>
-                </div>
+              {/* Checkboxes - Collapsible */}
+              <div className="border-t pt-3">
+                <button
+                  onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
+                  className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                >
+                  <ChevronDown className={`w-4 h-4 transition-transform ${showAdvancedOptions ? 'rotate-180' : ''}`} />
+                  Opções Avançadas
+                </button>
 
-                <div className="flex items-center gap-3">
-                  <Checkbox
-                    id="minimum"
-                    checked={useMinimum}
-                    onCheckedChange={(checked) => setUseMinimum(checked as boolean)}
-                  />
-                  <Label htmlFor="minimum" className="cursor-pointer">
-                    Usar tamanhos mínimos (para espaço limitado)
-                  </Label>
-                </div>
+                {showAdvancedOptions && (
+                  <div className="space-y-2 mt-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id="hibernation"
+                        checked={hibernation}
+                        onCheckedChange={(checked) => setHibernation(checked as boolean)}
+                      />
+                      <Label htmlFor="hibernation" className="text-xs cursor-pointer">
+                        Ativar Hibernação
+                      </Label>
+                    </div>
 
-                <div className="flex items-center gap-3">
-                  <Checkbox
-                    id="lvm"
-                    checked={useLVM}
-                    onCheckedChange={(checked) => setUseLVM(checked as boolean)}
-                  />
-                  <Label htmlFor="lvm" className="cursor-pointer">
-                    Usar LVM (Logical Volume Manager)
-                  </Label>
-                </div>
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id="minimum"
+                        checked={useMinimum}
+                        onCheckedChange={(checked) => setUseMinimum(checked as boolean)}
+                      />
+                      <Label htmlFor="minimum" className="text-xs cursor-pointer">
+                        Tamanhos Mínimos
+                      </Label>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id="lvm"
+                        checked={useLVM}
+                        onCheckedChange={(checked) => setUseLVM(checked as boolean)}
+                      />
+                      <Label htmlFor="lvm" className="text-xs cursor-pointer">
+                        Usar LVM
+                      </Label>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id="autoUpdate"
+                        checked={autoUpdateEnabled}
+                        onCheckedChange={(checked) => setAutoUpdateEnabled(checked as boolean)}
+                      />
+                      <Label htmlFor="autoUpdate" className="text-xs cursor-pointer">
+                        Auto-atualizar por processador
+                      </Label>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              <div className="border-t pt-6 space-y-4">
+              {/* Space Distribution Slider */}
+              <div className="border-t pt-3 space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label className="text-base font-semibold">Distribuição de Espaço em Disco</Label>
-                  <span className="text-sm font-bold text-blue-600 dark:text-blue-400">
-                    {systemPercentage}% Sistema | {100 - systemPercentage}% Dados
+                  <Label className="text-xs font-semibold">Distribuição de Espaço</Label>
+                  <span className="text-xs font-bold text-blue-600 dark:text-blue-400">
+                    {systemPercentage}% / {100 - systemPercentage}%
                   </span>
                 </div>
-                <div className="space-y-2">
-                  <input
-                    type="range"
-                    min="10"
-                    max="80"
-                    value={systemPercentage}
-                    onChange={(e) => setSystemPercentage(Number(e.target.value))}
-                    className="w-full h-2 bg-gradient-to-r from-blue-200 to-blue-600 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                  />
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>10% (Mínimo)</span>
-                    <span>80% (Máximo)</span>
-                  </div>
+                <input
+                  type="range"
+                  min="10"
+                  max="80"
+                  value={systemPercentage}
+                  onChange={(e) => setSystemPercentage(Number(e.target.value))}
+                  className="w-full h-2 bg-gradient-to-r from-blue-200 to-blue-600 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Results Tab - Cleaner */}
+        <TabsContent value="results" className="space-y-4">
+          {/* Partition Visualization */}
+          <PartitionVisualization partitions={partitions} />
+
+          {/* Quick Stats */}
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground">Sistema</p>
+                  <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                    {((diskSize * systemPercentage) / 100).toFixed(1)} GB
+                  </p>
                 </div>
-                <div className="grid grid-cols-2 gap-4 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-900">
-                  <div>
-                    <p className="text-xs font-semibold text-muted-foreground">Sistema</p>
-                    <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                      {((diskSize * systemPercentage) / 100).toFixed(1)} GB
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-muted-foreground">Dados (/home)</p>
-                    <p className="text-lg font-bold text-green-600 dark:text-green-400">
-                      {((diskSize * (100 - systemPercentage)) / 100).toFixed(1)} GB
-                    </p>
-                  </div>
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground">Dados</p>
+                  <p className="text-lg font-bold text-green-600 dark:text-green-400">
+                    {((diskSize * (100 - systemPercentage)) / 100).toFixed(1)} GB
+                  </p>
+                </div>
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground">Root</p>
+                  <p className="text-lg font-bold text-purple-600 dark:text-purple-400">
+                    {partitions.root.toFixed(1)} GB
+                  </p>
+                </div>
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground">Home</p>
+                  <p className="text-lg font-bold text-amber-600 dark:text-amber-400">
+                    {partitions.home.toFixed(1)} GB
+                  </p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Firmware Notes */}
-          {firmware.notes.length > 0 && (
-            <Card className="bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900">
-              <CardHeader>
-                <CardTitle className="text-base">Notas sobre {firmware.name}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2">
-                  {firmware.notes.map((note, i) => (
-                    <li key={i} className="flex gap-2 text-sm">
-                      <span className="text-amber-600 dark:text-amber-400 font-bold">•</span>
-                      <span>{note}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Performance Tips */}
-          {performanceTips.length > 0 && (
-            <Card className="bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-900">
-              <CardHeader>
-                <CardTitle className="text-base">Dicas de Desempenho para {diskType.name}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2">
-                  {performanceTips.map((tip, i) => (
-                    <li key={i} className="flex gap-2 text-sm">
-                      <span className="text-green-600 dark:text-green-400 font-bold">✓</span>
-                      <span>{tip}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Partition Visualization */}
-          <PartitionVisualization partitions={partitions} />
-
-          {/* Partition Table */}
-          <Card>
-            <CardHeader>
+          {/* Partition Table - Simplified */}
+          <Card className="border-0 shadow-sm">
+            <CardHeader className="pb-3">
               <CardTitle className="text-base">Detalhes das Partições</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="w-full text-xs">
                   <thead>
                     <tr className="border-b border-slate-200 dark:border-slate-700">
                       <th className="text-left py-2 px-2 font-semibold">Partição</th>
-                      <th className="text-left py-2 px-2 font-semibold">Ponto de Montagem</th>
-                      <th className="text-right py-2 px-2 font-semibold">Tamanho (GB)</th>
+                      <th className="text-left py-2 px-2 font-semibold">Ponto</th>
+                      <th className="text-right py-2 px-2 font-semibold">Tamanho</th>
                       <th className="text-right py-2 px-2 font-semibold">%</th>
                     </tr>
                   </thead>
@@ -559,7 +591,7 @@ export default function PartitionCalculator() {
                       <tr className="border-b border-slate-100 dark:border-slate-800">
                         <td className="py-2 px-2">EFI</td>
                         <td className="py-2 px-2">/boot/efi</td>
-                        <td className="text-right py-2 px-2">{partitions.efi.toFixed(2)}</td>
+                        <td className="text-right py-2 px-2">{partitions.efi.toFixed(2)} GB</td>
                         <td className="text-right py-2 px-2">
                           {((partitions.efi / partitions.total) * 100).toFixed(1)}%
                         </td>
@@ -568,15 +600,15 @@ export default function PartitionCalculator() {
                     <tr className="border-b border-slate-100 dark:border-slate-800">
                       <td className="py-2 px-2">Boot</td>
                       <td className="py-2 px-2">/boot</td>
-                      <td className="text-right py-2 px-2">{partitions.boot.toFixed(2)}</td>
+                      <td className="text-right py-2 px-2">{partitions.boot.toFixed(2)} GB</td>
                       <td className="text-right py-2 px-2">
                         {((partitions.boot / partitions.total) * 100).toFixed(1)}%
                       </td>
                     </tr>
                     <tr className="border-b border-slate-100 dark:border-slate-800">
-                      <td className="py-2 px-2">Raiz</td>
+                      <td className="py-2 px-2">Root</td>
                       <td className="py-2 px-2">/</td>
-                      <td className="text-right py-2 px-2">{partitions.root.toFixed(2)}</td>
+                      <td className="text-right py-2 px-2">{partitions.root.toFixed(2)} GB</td>
                       <td className="text-right py-2 px-2">
                         {((partitions.root / partitions.total) * 100).toFixed(1)}%
                       </td>
@@ -585,17 +617,17 @@ export default function PartitionCalculator() {
                       <tr className="border-b border-slate-100 dark:border-slate-800">
                         <td className="py-2 px-2">Swap</td>
                         <td className="py-2 px-2">swap</td>
-                        <td className="text-right py-2 px-2">{partitions.swap.toFixed(2)}</td>
+                        <td className="text-right py-2 px-2">{partitions.swap.toFixed(2)} GB</td>
                         <td className="text-right py-2 px-2">
                           {((partitions.swap / partitions.total) * 100).toFixed(1)}%
                         </td>
                       </tr>
                     )}
-                    <tr>
+                    <tr className="bg-blue-50 dark:bg-blue-950/30">
                       <td className="py-2 px-2 font-semibold">Home</td>
                       <td className="py-2 px-2 font-semibold">/home</td>
                       <td className="text-right py-2 px-2 font-semibold">
-                        {partitions.home.toFixed(2)}
+                        {partitions.home.toFixed(2)} GB
                       </td>
                       <td className="text-right py-2 px-2 font-semibold">
                         {((partitions.home / partitions.total) * 100).toFixed(1)}%
@@ -604,20 +636,31 @@ export default function PartitionCalculator() {
                   </tbody>
                 </table>
               </div>
-              <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-                <p className="text-sm font-semibold">
-                  Total do disco: {partitions.total.toFixed(2)} GB
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Espaço para dados (/home): {partitions.home.toFixed(2)} GB (
-                  {((partitions.home / partitions.total) * 100).toFixed(1)}%)
-                </p>
-              </div>
             </CardContent>
           </Card>
+
+          {/* Performance Tips */}
+          {performanceTips.length > 0 && (
+            <Card className="border-0 shadow-sm bg-green-50 dark:bg-green-950/20">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">💡 Dicas de Desempenho</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-1">
+                  {performanceTips.map((tip, i) => (
+                    <li key={i} className="flex gap-2 text-xs">
+                      <span className="text-green-600 dark:text-green-400 flex-shrink-0">✓</span>
+                      <span>{tip}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
-        <TabsContent value="export" className="space-y-6">
+        {/* Export Tab */}
+        <TabsContent value="export" className="space-y-4">
           <SettingsPanel
             hostname={hostname}
             setHostname={setHostname}
@@ -625,68 +668,57 @@ export default function PartitionCalculator() {
             setTimezone={setTimezone}
           />
 
-          {/* Export Options */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Configurações de Exportação</CardTitle>
-              <CardDescription>
-                Baixe a configuração em diferentes formatos para auto-instalação
+          <Card className="border-0 shadow-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Exportar Configuração</CardTitle>
+              <CardDescription className="text-xs">
+                Baixe em diferentes formatos para auto-instalação
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <CardContent className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {/* Kickstart XML */}
-                <Card className="border-slate-200 dark:border-slate-700">
-                  <CardHeader>
-                    <CardTitle className="text-base">Kickstart XML</CardTitle>
-                    <CardDescription className="text-xs">
+                <Card className="border-0 shadow-sm">
+                  <CardContent className="p-3 space-y-2">
+                    <h4 className="font-semibold text-sm">Kickstart XML</h4>
+                    <p className="text-xs text-muted-foreground">
                       Para Fedora, CentOS, RHEL
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <p className="text-sm text-muted-foreground">
-                      Arquivo de configuração para instalação automatizada
                     </p>
                     <div className="flex gap-2">
                       <Button
-                        variant="outline"
+                        onClick={handleDownloadXML}
                         size="sm"
-                        onClick={handleCopyXML}
-                        className="flex-1 gap-2"
+                        className="flex-1 text-xs h-8"
                       >
-                        <Copy className="w-4 h-4" />
-                        Copiar
+                        <Download className="w-3 h-3 mr-1" />
+                        Baixar
                       </Button>
                       <Button
+                        onClick={handleCopyXML}
+                        variant="outline"
                         size="sm"
-                        onClick={handleDownloadXML}
-                        className="flex-1 gap-2"
+                        className="flex-1 text-xs h-8"
                       >
-                        <Download className="w-4 h-4" />
-                        Baixar
+                        <Copy className="w-3 h-3 mr-1" />
+                        Copiar
                       </Button>
                     </div>
                   </CardContent>
                 </Card>
 
-                {/* Boot Script */}
-                <Card className="border-slate-200 dark:border-slate-700">
-                  <CardHeader>
-                    <CardTitle className="text-base">Script de Boot</CardTitle>
-                    <CardDescription className="text-xs">
-                      Para particionamento manual
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <p className="text-sm text-muted-foreground">
-                      Script bash para criar partições automaticamente
+                {/* Partclone Script */}
+                <Card className="border-0 shadow-sm">
+                  <CardContent className="p-3 space-y-2">
+                    <h4 className="font-semibold text-sm">Script Partclone</h4>
+                    <p className="text-xs text-muted-foreground">
+                      Para backup/restore
                     </p>
                     <Button
-                      size="sm"
                       onClick={handleDownloadScript}
-                      className="w-full gap-2"
+                      size="sm"
+                      className="w-full text-xs h-8"
                     >
-                      <Download className="w-4 h-4" />
+                      <Download className="w-3 h-3 mr-1" />
                       Baixar Script
                     </Button>
                   </CardContent>
@@ -696,107 +728,16 @@ export default function PartitionCalculator() {
           </Card>
         </TabsContent>
 
-        {/* Advanced Partitioning Tab */}
-        <TabsContent value="advanced" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Sliders className="w-5 h-5" />
-                Particionamento Avançado
-              </CardTitle>
-              <CardDescription>
-                Customize o tamanho de cada partição e adicione pontos de montagem opcionais
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {advancedConfig ? (
-                <AdvancedPartitionEditor
-                  config={advancedConfig}
-                  onUpdate={setAdvancedConfig}
-                  diskSizeGB={diskSize}
-                />
-              ) : (
-                <p className="text-muted-foreground">Carregando configuração avançada...</p>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
         {/* Validation Tab */}
-        <TabsContent value="validation" className="space-y-6">
+        <TabsContent value="validation" className="space-y-4">
           <ValidationPanel
-            validation={validatePartitionConfiguration(
-              partitions,
-              selectedDistro,
-              systemPercentage
-            )}
-            growthProjection={calculateSpaceGrowthProjection(
-              partitions,
-              selectedDistro
-            )}
+            validation={validatePartitionConfiguration(partitions, selectedDistro, systemPercentage)}
+            growthProjection={calculateSpaceGrowthProjection(partitions, selectedDistro)}
           />
         </TabsContent>
 
-        {/* Partclone Backup Tab */}
-        <TabsContent value="partclone" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Gerador de Script Partclone</CardTitle>
-              <CardDescription>
-                Crie scripts para backup e restore de particoes
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="bg-slate-50 dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-700 max-h-96 overflow-y-auto font-mono text-xs">
-                <pre className="whitespace-pre-wrap break-words">
-                  {generatePartcloneScript(partitions, hostname)}
-                </pre>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => {
-                    navigator.clipboard.writeText(
-                      generatePartcloneScript(partitions, hostname)
-                    );
-                    toast.success("Script copiado para a area de transferencia!");
-                  }}
-                  className="flex-1 gap-2"
-                >
-                  <Copy className="w-4 h-4" />
-                  Copiar
-                </Button>
-                <Button
-                  onClick={() => {
-                    const element = document.createElement("a");
-                    element.setAttribute(
-                      "href",
-                      "data:text/plain;charset=utf-8," +
-                        encodeURIComponent(
-                          generatePartcloneScript(partitions, hostname)
-                        )
-                    );
-                    element.setAttribute(
-                      "download",
-                      `partclone-backup-${hostname}.sh`
-                    );
-                    element.style.display = "none";
-                    document.body.appendChild(element);
-                    element.click();
-                    document.body.removeChild(element);
-                    toast.success("Script baixado com sucesso!");
-                  }}
-                  className="flex-1 gap-2"
-                >
-                  <Download className="w-4 h-4" />
-                  Baixar
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
         {/* Reviews Tab */}
-        <TabsContent value="reviews" className="space-y-6">
+        <TabsContent value="reviews" className="space-y-4">
           <ReviewSection />
         </TabsContent>
       </Tabs>
