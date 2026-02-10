@@ -116,10 +116,19 @@
 
 
 ## Fase 2 - Gerenciamento Admin e Geolocalização (Current)
-- [ ] Página /admin/users para gerenciar usuários (promover/rebaixar/deletar)
-- [ ] Página /admin/settings com 4 abas (Geral, Segurança, Notificações, Integrações)
-- [ ] Geolocalização automática de país/idioma do visitante
-- [ ] Toggle de idioma com localStorage (PT/EN/ES/FR)
-- [ ] Procedures tRPC para operações admin
+- [x] Página /admin/users para gerenciar usuários (promover/rebaixar/deletar)
+- [x] Página /admin/settings com 4 abas (Geral, Segurança, Notificações, Integrações)
+- [x] Geolocalização automática de país/idioma do visitante
+- [x] Toggle de idioma com localStorage (PT/EN/ES/FR)
+- [x] Procedures tRPC para operações admin
 - [ ] Testes unitários para admin operations
+- [ ] Sincronizar com GitHub
+
+## Fase 3 - Preseed Scripts & UEFI Boot (Current Session)
+- [x] Analisar estrutura atual de export de scripts
+- [x] Criar gerador de Preseed Scripts para Debian/Ubuntu
+- [x] Adicionar suporte a UEFI Boot automático
+- [x] Integrar particionamento dinâmico nos scripts
+- [x] Criar interface de download de scripts Preseed
+- [x] Testar e validar scripts gerados (14 testes passando)
 - [ ] Sincronizar com GitHub
