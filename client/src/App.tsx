@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminSettings from "./pages/AdminSettings";
 import AdminUsers from "./pages/AdminUsers";
+import Documentation from "./pages/Documentation";
 import Footer from "./components/Footer";
 
 function Router() {
@@ -17,6 +18,7 @@ function Router() {
       <div className="flex-1">
         <Switch>
           <Route path={"/"} component={Home} />
+          <Route path={"/docs"} component={Documentation} />
           <Route path={"/admin"} component={AdminDashboard} />
           <Route path={"/admin/settings"} component={AdminSettings} />
           <Route path={"/admin/users"} component={AdminUsers} />

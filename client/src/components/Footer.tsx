@@ -1,4 +1,5 @@
 import { Heart } from "lucide-react";
+import { Link } from "wouter";
 
 export default function Footer() {
   return (
@@ -10,6 +11,14 @@ export default function Footer() {
             <p>
               Este servico e gratuito e mantido com apoio da comunidade.
             </p>
+          </div>
+          <div className="flex gap-6 text-sm">
+            <Link href="/" className="hover:text-slate-300 transition-colors">
+              Início
+            </Link>
+            <Link href="/docs" className="hover:text-slate-300 transition-colors">
+              Documentação
+            </Link>
           </div>
           <div className="text-sm md:text-base text-center md:text-right">
             <p className="mb-2">Se ele te ajudou, considere fazer uma doacao</p>

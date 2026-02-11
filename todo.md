@@ -133,3 +133,12 @@
 - [x] Testar e validar scripts gerados (14 testes passando)
 - [x] Integrar handlers na UI de exportação
 - [ ] Sincronizar com GitHub
+
+
+## Wizard de Instalação & Documentação (Current Session)
+- [x] Criar componente InstallationWizard com passos visuais
+- [x] Implementar navegação e progresso do wizard
+- [x] Adicionar página de Documentação de Uso
+- [x] Integrar wizard e documentação na navegação
+- [x] Testar e validar (24 testes passando)
+- [ ] Sincronizar com GitHub
