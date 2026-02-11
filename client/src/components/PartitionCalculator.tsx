@@ -34,6 +34,8 @@ import {
   getAutoConfigRecommendation,
   detectBootType,
   validateBootTypeCompatibility,
+  generatePreseedScript,
+  generateUEFIBootScript,
   AdvancedPartitionConfig,
   FirmwareType,
   DiskType,
@@ -165,6 +167,62 @@ export default function PartitionCalculator() {
     } catch {
       toast.error("Erro ao copiar para a área de transferência");
     }
+  };
+
+  const handleDownloadPreseed = () => {
+    const preseed = generatePreseedScript(
+      selectedDistro,
+      partitions,
+      hostname,
+      timezone,
+      selectedFirmware as FirmwareType
+    );
+    const element = document.createElement("a");
+    element.setAttribute(
+      "href",
+      "data:text/plain;charset=utf-8," + encodeURIComponent(preseed)
+    );
+    element.setAttribute("download", `${hostname}-preseed.cfg`);
+    element.style.display = "none";
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    toast.success("Script Preseed baixado com sucesso!");
+  };
+
+  const handleCopyPreseed = async () => {
+    const preseed = generatePreseedScript(
+      selectedDistro,
+      partitions,
+      hostname,
+      timezone,
+      selectedFirmware as FirmwareType
+    );
+    try {
+      await navigator.clipboard.writeText(preseed);
+      toast.success("Preseed copiado para a área de transferência!");
+    } catch {
+      toast.error("Erro ao copiar para a área de transferência");
+    }
+  };
+
+  const handleDownloadUEFI = () => {
+    const uefiScript = generateUEFIBootScript(
+      hostname,
+      timezone,
+      selectedFirmware as FirmwareType
+    );
+    const element = document.createElement("a");
+    element.setAttribute(
+      "href",
+      "data:text/plain;charset=utf-8," + encodeURIComponent(uefiScript)
+    );
+    element.setAttribute("download", `${hostname}-uefi-boot-setup.sh`);
+    element.style.display = "none";
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    toast.success("Script UEFI Boot baixado com sucesso!");
   };
 
   const saveConfiguration = () => {
@@ -763,6 +821,53 @@ export default function PartitionCalculator() {
                     </p>
                     <Button
                       onClick={handleDownloadScript}
+                      size="sm"
+                      className="w-full text-xs h-8"
+                    >
+                      <Download className="w-3 h-3 mr-1" />
+                      Baixar Script
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* Preseed Script */}
+                <Card className="border-0 shadow-sm">
+                  <CardContent className="p-3 space-y-2">
+                    <h4 className="font-semibold text-sm">Preseed Script</h4>
+                    <p className="text-xs text-muted-foreground">
+                      Para Debian/Ubuntu
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={handleDownloadPreseed}
+                        size="sm"
+                        className="flex-1 text-xs h-8"
+                      >
+                        <Download className="w-3 h-3 mr-1" />
+                        Baixar
+                      </Button>
+                      <Button
+                        onClick={handleCopyPreseed}
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 text-xs h-8"
+                      >
+                        <Copy className="w-3 h-3 mr-1" />
+                        Copiar
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* UEFI Boot Script */}
+                <Card className="border-0 shadow-sm">
+                  <CardContent className="p-3 space-y-2">
+                    <h4 className="font-semibold text-sm">UEFI Boot Script</h4>
+                    <p className="text-xs text-muted-foreground">
+                      Configuração de boot
+                    </p>
+                    <Button
+                      onClick={handleDownloadUEFI}
                       size="sm"
                       className="w-full text-xs h-8"
                     >

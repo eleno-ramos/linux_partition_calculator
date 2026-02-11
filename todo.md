@@ -131,4 +131,5 @@
 - [x] Integrar particionamento dinâmico nos scripts
 - [x] Criar interface de download de scripts Preseed
 - [x] Testar e validar scripts gerados (14 testes passando)
+- [x] Integrar handlers na UI de exportação
 - [ ] Sincronizar com GitHub
