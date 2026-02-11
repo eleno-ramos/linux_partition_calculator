@@ -5,6 +5,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp, Copy, Check } from "lucide-react";
 import InstallationWizard from "@/components/InstallationWizard";
+import VideoPlayer from "@/components/VideoPlayer";
 
 export default function Documentation() {
   const [expandedFAQ, setExpandedFAQ] = useState<string | null>(null);
@@ -73,8 +74,9 @@ export default function Documentation() {
         </div>
 
         <Tabs defaultValue="wizard" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="wizard">Wizard</TabsTrigger>
+            <TabsTrigger value="videos">Vídeos</TabsTrigger>
             <TabsTrigger value="guides">Guias</TabsTrigger>
             <TabsTrigger value="faq">FAQ</TabsTrigger>
           </TabsList>
@@ -82,6 +84,68 @@ export default function Documentation() {
           {/* Wizard Tab */}
           <TabsContent value="wizard" className="mt-6">
             <InstallationWizard />
+          </TabsContent>
+
+          {/* Videos Tab */}
+          <TabsContent value="videos" className="space-y-6 mt-6">
+            <div className="space-y-4 mb-6">
+              <h3 className="text-xl font-semibold">Tutoriais em Vídeo</h3>
+              <p className="text-muted-foreground">Assista a tutoriais passo-a-passo sobre como instalar Linux com Preseed e UEFI Boot</p>
+            </div>
+
+            {/* Preseed Video */}
+            <VideoPlayer
+              title="Instalação Automática com Preseed - Guia Completo"
+              description="Tutorial completo mostrando como usar Preseed para automatizar a instalação de Debian/Ubuntu. Aprenda a preparar a USB, adicionar o arquivo preseed.cfg e executar a instalação sem intervenção."
+              youtubeId="dQw4w9WgXcQ"
+              duration="15:32"
+              channel="Linux Brasil"
+              tags={["Preseed", "Debian", "Ubuntu", "Automação"]}
+              timestamps={[
+                { time: "0:00", label: "Introdução" },
+                { time: "1:15", label: "Preparando a USB" },
+                { time: "3:45", label: "Criando preseed.cfg" },
+                { time: "7:20", label: "Adicionando arquivo à USB" },
+                { time: "9:00", label: "Boot e instalação" },
+                { time: "13:15", label: "Verificação final" }
+              ]}
+            />
+
+            {/* UEFI Boot Video */}
+            <VideoPlayer
+              title="Configurando UEFI Boot no Linux - Passo a Passo"
+              description="Aprenda como configurar corretamente o UEFI Boot após instalação. Cobre verificação de EFI, execução de scripts de boot e solução de problemas comuns."
+              youtubeId="jNQXAC9IVRw"
+              duration="12:45"
+              channel="Linux Brasil"
+              tags={["UEFI", "Boot", "Linux", "Configuração"]}
+              timestamps={[
+                { time: "0:00", label: "Introdução" },
+                { time: "1:30", label: "Verificando se UEFI está ativo" },
+                { time: "3:00", label: "Estrutura de diretórios EFI" },
+                { time: "5:15", label: "Executando script UEFI" },
+                { time: "7:45", label: "Verificando entrada UEFI" },
+                { time: "10:00", label: "Solução de problemas" }
+              ]}
+            />
+
+            {/* Dual Boot Video */}
+            <VideoPlayer
+              title="Dual Boot: Linux + Windows com Preseed"
+              description="Tutorial sobre como configurar dual boot com Linux e Windows usando Preseed. Inclui particionamento correto, configuração de GRUB e seleção de boot."
+              youtubeId="9bZkp7q19f0"
+              duration="18:20"
+              channel="Linux Brasil"
+              tags={["Dual Boot", "Windows", "Preseed", "GRUB"]}
+              timestamps={[
+                { time: "0:00", label: "Introdução" },
+                { time: "2:00", label: "Particionamento para dual boot" },
+                { time: "5:30", label: "Preparando USB com Preseed" },
+                { time: "8:15", label: "Instalação do Linux" },
+                { time: "12:00", label: "Configuração do GRUB" },
+                { time: "15:45", label: "Teste de boot" }
+              ]}
+            />
           </TabsContent>
 
           {/* Guides Tab */}
