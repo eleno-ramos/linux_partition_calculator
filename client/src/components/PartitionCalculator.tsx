@@ -48,7 +48,9 @@ import ReviewSection from "./ReviewSection";
 import AdvancedPartitionEditor from "./AdvancedPartitionEditor";
 import PartitioningGuide from "./PartitioningGuide";
 import PartitionSizeEditor from "./PartitionSizeEditor";
+import InstallationGuideModal from "./InstallationGuideModal";
 import { toast } from "sonner";
+import { HelpCircle } from "lucide-react";
 
 interface SavedConfiguration {
   id: string;
@@ -89,6 +91,7 @@ export default function PartitionCalculator() {
   const [advancedConfig, setAdvancedConfig] = useState<AdvancedPartitionConfig | null>(null);
   const [autoUpdateEnabled, setAutoUpdateEnabled] = useState(true);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
+  const [showInstallationGuide, setShowInstallationGuide] = useState(false);
 
   // Load saved configurations from localStorage
   useEffect(() => {
@@ -776,10 +779,23 @@ export default function PartitionCalculator() {
 
           <Card className="border-0 shadow-sm">
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">Exportar Configuração</CardTitle>
-              <CardDescription className="text-xs">
-                Baixe em diferentes formatos para auto-instalação
-              </CardDescription>
+              <div className="flex items-start justify-between">
+                <div>
+                  <CardTitle className="text-base">Exportar Configuração</CardTitle>
+                  <CardDescription className="text-xs">
+                    Baixe em diferentes formatos para auto-instalação
+                  </CardDescription>
+                </div>
+                <Button
+                  onClick={() => setShowInstallationGuide(true)}
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <HelpCircle className="w-4 h-4" />
+                  Guia
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -894,6 +910,12 @@ export default function PartitionCalculator() {
           <ReviewSection />
         </TabsContent>
       </Tabs>
+
+      {/* Installation Guide Modal */}
+      <InstallationGuideModal
+        open={showInstallationGuide}
+        onOpenChange={setShowInstallationGuide}
+      />
     </div>
   );
 }
