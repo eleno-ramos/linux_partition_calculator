@@ -158,3 +158,9 @@
 - [x] Integrar contador na página Home
 - [x] Testar e validar funcionamento
 - [ ] Sincronizar com GitHub
+
+## Melhorias no VisitorCounter (Current Session)
+- [x] Implementar gráfico de tendência de visitantes (últimos 7 dias)
+- [x] Integrar mapa interativo com países clicáveis
+- [x] Implementar notificações de milestones
+- [x] Testar e validar todas as funcionalidades

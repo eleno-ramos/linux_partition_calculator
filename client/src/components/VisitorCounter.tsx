@@ -4,6 +4,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
+import TrendChart from "./TrendChart";
+import InteractiveMap from "./InteractiveMap";
+import { useMilestoneNotification } from "@/hooks/useMilestoneNotification";
 
 const BRAZILIAN_STATES = {
   AC: "Acre",
@@ -50,6 +53,38 @@ export default function VisitorCounter() {
   const totalVisitors = visitorData?.totalVisitors || 0;
   const topCountries = visitorData?.topCountries || [];
   const topContinents = visitorData?.topContinents || [];
+
+  // Usar hook de notificacoes de milestones
+  useMilestoneNotification(totalVisitors);
+
+  // Preparar dados para o mapa interativo
+  const countryDataForMap = topCountries.map((country) => ({
+    name: country.country || "Unknown",
+    count: country.count,
+    code: getCountryCode(country.country || ""),
+  }));
+
+  // Funcao auxiliar para obter codigo de pais
+  function getCountryCode(countryName: string): string {
+    const codes: Record<string, string> = {
+      Brazil: "BR",
+      "United States": "US",
+      Portugal: "PT",
+      Germany: "DE",
+      France: "FR",
+      Canada: "CA",
+      Mexico: "MX",
+      Spain: "ES",
+      "United Kingdom": "GB",
+      Japan: "JP",
+      Australia: "AU",
+      India: "IN",
+      China: "CN",
+      Russia: "RU",
+      "South Africa": "ZA",
+    };
+    return codes[countryName] || "XX";
+  }
 
   // Mock data para estados brasileiros
   const brazilianStates = [
@@ -255,6 +290,12 @@ export default function VisitorCounter() {
                 </Card>
               )}
             </div>
+
+            {/* Grafico de Tendencia */}
+            <TrendChart />
+
+            {/* Mapa Interativo */}
+            <InteractiveMap countries={countryDataForMap} onCountryClick={(country) => alert(`Clicou em: ${country}`)} />
 
             {/* Info sobre dados em tempo real */}
             <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900 rounded-lg">
