@@ -164,3 +164,10 @@
 - [x] Integrar mapa interativo com países clicáveis
 - [x] Implementar notificações de milestones
 - [x] Testar e validar todas as funcionalidades
+
+## Configurações Avançadas Expandidas (Current Session)
+- [x] Implementar partições Linux opcionais com tamanhos recomendados
+- [x] Adicionar campos de usuário e senha nas configurações
+- [x] Criar guia interativo de decisão para configurações
+- [x] Testar funcionalidades e validar integração (24 testes passando)
+- [x] Alinhar com documentação e estrutura GitHub

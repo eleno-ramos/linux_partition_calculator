@@ -17,11 +17,19 @@ Uma ferramenta web interativa e gratuita que ajuda usuários a planejar o partic
 - **Sliders Individuais**: Controle granular de tamanho para cada partição
 - **Distribuição Flexível**: Aloque 10-80% do disco para o sistema, restante para dados
 - **Validação em Tempo Real**: Alertas e sugestões de otimização
+- **Partições Opcionais Expandidas**: Home, Var, Tmp, Opt, Srv e Swap com tamanhos recomendados
+- **Guia Interativo**: Recomendações personalizadas por cenário (Usuário Doméstico, Servidor, Desenvolvedor, Performance)
 
 ### Firmware e Boot
 - **Suporte Completo**: BIOS (MBR), UEFI (GPT), GPT com BIOS legado, MBR tradicional
 - **Detecção Automática**: Firmware recomendado baseado no processador
 - **Scripts de Auto-Instalação**: Gere Kickstart, Preseed e scripts UEFI Boot
+
+### Configurações de Usuário e Autenticação
+- **Cadastro de Usuário**: Configure nome de usuário para o sistema
+- **Gerenciamento de Senha**: Defina senha com validação de força (fraca, média, forte)
+- **Confirmação de Senha**: Validação em tempo real de correspondência
+- **Recomendações de Segurança**: Dicas para senhas fortes com maiúsculas, números e símbolos
 
 ### Exportação e Backup
 - **Múltiplos Formatos**: XML (Kickstart), scripts Bash, configuração de usuário/senha/WiFi
@@ -33,9 +41,12 @@ Uma ferramenta web interativa e gratuita que ajuda usuários a planejar o partic
 - **Inglês Internacional**: Detecção automática de geolocalização para outros países
 - **Toggle Manual**: Mude de idioma a qualquer momento com persistência em localStorage
 
-### Globo Animado com Estatísticas
-- **Contador Global**: Visualize visitantes em tempo real com ícone girando
-- **Mapa Interativo**: Clique para expandir e ver visitantes por país
+### Contador Global de Visitantes com Estatísticas
+- **Contador em Tempo Real**: Visualize visitantes globais com animação de pulso
+- **Gráfico de Tendência**: Crescimento dos últimos 7 dias com Recharts
+- **Mapa Interativo**: Explore países por região (América do Norte, América do Sul, Europa, Ásia, Oceania, África)
+- **Códigos de Cores**: Gradiente azul indicando volume de visitantes por país
+- **Notificações de Milestones**: Celebre marcos (100, 500, 1K, 5K, 10K, 50K, 100K visitantes)
 - **Segregação por Estado**: Detalhamento especial para o Brasil por estado
 - **Geolocalização**: Rastreamento automático por IP
 
@@ -59,8 +70,10 @@ Uma ferramenta web interativa e gratuita que ajuda usuários a planejar o partic
 2. **Configure o Hardware**: Selecione tamanho do disco, RAM e processador
 3. **Revise Recomendações**: O sistema auto-atualiza firmware, disco e hibernação
 4. **Ajuste Partições**: Use sliders para personalizar tamanho de cada partição
-5. **Exporte Configuração**: Baixe XML, scripts ou salve para depois
-6. **Instale o Sistema**: Use os scripts gerados para auto-instalação
+5. **Configure Usuário e Senha**: Defina credenciais de acesso no painel de configurações avançadas
+6. **Escolha Partições Opcionais**: Use o guia interativo para selecionar partições adicionais
+7. **Exporte Configuração**: Baixe XML, scripts ou salve para depois
+8. **Instale o Sistema**: Use os scripts gerados para auto-instalação
 
 ### Para Administradores
 
@@ -107,6 +120,7 @@ Uma ferramenta web interativa e gratuita que ajuda usuários a planejar o partic
 - **Log de Auditoria**: Todas as ações administrativas são registradas
 - **Validação de Entrada**: Sanitização de todos os dados do usuário
 - **HTTPS Obrigatório**: Comunicação criptografada
+- **Validação de Senha**: Indicador de força com recomendações de segurança
 
 ## 📈 Estatísticas
 
@@ -114,6 +128,7 @@ Uma ferramenta web interativa e gratuita que ajuda usuários a planejar o partic
 - **Avaliações**: Média de classificação e total de comentários
 - **Compartilhamentos**: Contagem por rede social
 - **Configurações Salvas**: Histórico de últimas 5 configurações por usuário
+- **Tendências**: Gráfico de crescimento dos últimos 7 dias
 
 ## 🌍 Suporte Multilíngue
 
@@ -131,12 +146,14 @@ Uma ferramenta web interativa e gratuita que ajuda usuários a planejar o partic
 2. Leia as notas de resumo para entender cada partição
 3. Valide sua configuração na aba "Validação"
 4. Revise o gráfico de projeção de crescimento
+5. Use o guia interativo para escolher partições opcionais
 
 ### Para Usuários Avançados
 1. Ative o modo "Avançado" para controle granular
 2. Adicione pontos de montagem customizados
 3. Use LVM para maior flexibilidade
-4. Exporte múltiplas configurações para comparação
+4. Configure partições opcionais (Home, Var, Tmp, Opt, Srv)
+5. Exporte múltiplas configurações para comparação
 
 ### Para Administradores
 1. Monitore estatísticas no dashboard

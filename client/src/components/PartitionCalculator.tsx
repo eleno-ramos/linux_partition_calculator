@@ -49,6 +49,7 @@ import AdvancedPartitionEditor from "./AdvancedPartitionEditor";
 import PartitioningGuide from "./PartitioningGuide";
 import PartitionSizeEditor from "./PartitionSizeEditor";
 import InstallationGuideModal from "./InstallationGuideModal";
+import AdvancedSettingsPanel from "./AdvancedSettingsPanel";
 import { toast } from "sonner";
 import { HelpCircle } from "lucide-react";
 
@@ -92,6 +93,17 @@ export default function PartitionCalculator() {
   const [autoUpdateEnabled, setAutoUpdateEnabled] = useState(true);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
   const [showInstallationGuide, setShowInstallationGuide] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [optionalPartitions, setOptionalPartitions] = useState([
+    { id: "home", name: "Home (/home)", mountPoint: "/home", minSize: 10, recommendedSize: 100, description: "Diretorio de usuarios", enabled: false },
+    { id: "var", name: "Var (/var)", mountPoint: "/var", minSize: 5, recommendedSize: 20, description: "Logs e dados variaveis", enabled: false },
+    { id: "tmp", name: "Tmp (/tmp)", mountPoint: "/tmp", minSize: 2, recommendedSize: 10, description: "Arquivos temporarios", enabled: false },
+    { id: "opt", name: "Opt (/opt)", mountPoint: "/opt", minSize: 5, recommendedSize: 30, description: "Software adicional", enabled: false },
+    { id: "srv", name: "Srv (/srv)", mountPoint: "/srv", minSize: 5, recommendedSize: 20, description: "Dados de servicos", enabled: false },
+    { id: "swap", name: "Swap", mountPoint: "swap", minSize: 2, recommendedSize: 8, description: "Memoria virtual", enabled: true },
+  ]);
 
   // Load saved configurations from localStorage
   useEffect(() => {
@@ -608,6 +620,26 @@ export default function PartitionCalculator() {
                   value={systemPercentage}
                   onChange={(e) => setSystemPercentage(Number(e.target.value))}
                   className="w-full h-2 bg-gradient-to-r from-blue-200 to-blue-600 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                />
+              </div>
+
+              {/* Advanced Settings Panel */}
+              <div className="border-t pt-3">
+                <AdvancedSettingsPanel
+                  username={username}
+                  password={password}
+                  confirmPassword={confirmPassword}
+                  optionalPartitions={optionalPartitions}
+                  onUsernameChange={setUsername}
+                  onPasswordChange={setPassword}
+                  onConfirmPasswordChange={setConfirmPassword}
+                  onPartitionToggle={(partitionId, enabled) => {
+                    setOptionalPartitions(
+                      optionalPartitions.map((p) =>
+                        p.id === partitionId ? { ...p, enabled } : p
+                      )
+                    );
+                  }}
                 />
               </div>
             </CardContent>
