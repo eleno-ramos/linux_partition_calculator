@@ -171,3 +171,10 @@
 - [x] Criar guia interativo de decisão para configurações
 - [x] Testar funcionalidades e validar integração (24 testes passando)
 - [x] Alinhar com documentação e estrutura GitHub
+
+## Ajustes Gerais e Sincronização GitHub (Current Session)
+- [x] Revisar e ajustar tamanhos das partições Linux
+- [x] Melhorar componente AdvancedSettingsPanel (validações e UI)
+- [x] Otimizar performance e corrigir bugs
+- [x] Executar testes completos (24 testes passando)
+- [ ] Sincronizar com GitHub
