@@ -1,7 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Cpu, HardDrive, Zap, Shield, Download, BookOpen } from "lucide-react";
 import PartitionCalculator from "@/components/PartitionCalculator";
-import VisitorGlobe from "@/components/VisitorGlobe";
+import VisitorCounter from "@/components/VisitorCounter";
 import ReviewForm from "@/components/ReviewForm";
 import ReviewsList from "@/components/ReviewsList";
 import ShareButtons from "@/components/ShareButtons";
@@ -13,7 +13,7 @@ export default function Home() {
 
   return (
     <>
-      <VisitorGlobe />
+      <VisitorCounter />
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
         {/* Simplified Header */}
         <header className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-b border-slate-200 dark:border-slate-800">

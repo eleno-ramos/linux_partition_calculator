@@ -151,3 +151,10 @@
 - [x] Adicionar descrições e timestamps dos vídeos
 - [x] Testar e validar (24 testes passando)
 - [ ] Sincronizar com GitHub
+
+## Substituição do Globo por Contador de Visitantes (Current Session)
+- [x] Analisar componente VisitorGlobe atual
+- [x] Criar novo componente VisitorCounter com estatísticas
+- [x] Integrar contador na página Home
+- [x] Testar e validar funcionamento
+- [ ] Sincronizar com GitHub
