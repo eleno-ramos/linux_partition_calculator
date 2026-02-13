@@ -50,6 +50,7 @@ import PartitioningGuide from "./PartitioningGuide";
 import PartitionSizeEditor from "./PartitionSizeEditor";
 import InstallationGuideModal from "./InstallationGuideModal";
 import AdvancedSettingsPanel from "./AdvancedSettingsPanel";
+import ExportSettings from "./ExportSettings";
 import { toast } from "sonner";
 import { HelpCircle } from "lucide-react";
 
@@ -630,13 +631,7 @@ export default function PartitionCalculator() {
               {/* Advanced Settings Panel */}
               <div className="border-t pt-3">
                 <AdvancedSettingsPanel
-                  username={username}
-                  password={password}
-                  confirmPassword={confirmPassword}
                   optionalPartitions={optionalPartitions}
-                  onUsernameChange={setUsername}
-                  onPasswordChange={setPassword}
-                  onConfirmPasswordChange={setConfirmPassword}
                   onPartitionToggle={(partitionId, enabled) => {
                     setOptionalPartitions(
                       optionalPartitions.map((p) =>
@@ -811,6 +806,15 @@ export default function PartitionCalculator() {
             setHostname={setHostname}
             timezone={timezone}
             setTimezone={setTimezone}
+          />
+
+          <ExportSettings
+            username={username}
+            password={password}
+            confirmPassword={confirmPassword}
+            onUsernameChange={setUsername}
+            onPasswordChange={setPassword}
+            onConfirmPasswordChange={setConfirmPassword}
           />
 
           <Card className="border-0 shadow-sm">

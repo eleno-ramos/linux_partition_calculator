@@ -19,13 +19,7 @@ interface OptionalPartition {
 }
 
 interface AdvancedSettingsPanelProps {
-  username?: string;
-  password?: string;
-  confirmPassword?: string;
   optionalPartitions?: OptionalPartition[];
-  onUsernameChange?: (value: string) => void;
-  onPasswordChange?: (value: string) => void;
-  onConfirmPasswordChange?: (value: string) => void;
   onPartitionToggle?: (partitionId: string, enabled: boolean) => void;
 }
 
@@ -87,21 +81,12 @@ const DEFAULT_OPTIONAL_PARTITIONS: OptionalPartition[] = [
 ];
 
 export default function AdvancedSettingsPanel({
-  username = "",
-  password = "",
-  confirmPassword = "",
   optionalPartitions = DEFAULT_OPTIONAL_PARTITIONS,
-  onUsernameChange,
-  onPasswordChange,
-  onConfirmPasswordChange,
   onPartitionToggle,
 }: AdvancedSettingsPanelProps) {
-  const [showPasswordValidation, setShowPasswordValidation] = useState(false);
   const [expandedPartition, setExpandedPartition] = useState<string | null>(null);
   const [showDecisionGuide, setShowDecisionGuide] = useState(false);
 
-  const passwordsMatch = password === confirmPassword && password.length > 0;
-  const passwordStrength = calculatePasswordStrength(password);
   const totalPartitionSize = optionalPartitions
     .filter((p) => p.enabled)
     .reduce((sum, p) => sum + p.recommendedSize, 0);
@@ -116,128 +101,6 @@ export default function AdvancedSettingsPanel({
 
   return (
     <div className="space-y-6">
-      {/* Seção de Usuário e Senha */}
-      <Card className="border-0 shadow-sm">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            👤 Usuário e Autenticação
-          </CardTitle>
-          <CardDescription>Configure as credenciais de acesso ao sistema</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Username */}
-          <div className="space-y-2">
-            <Label htmlFor="username" className="font-medium">
-              Nome de Usuário
-            </Label>
-            <Input
-              id="username"
-              placeholder="ex: usuario"
-              value={username}
-              onChange={(e) => onUsernameChange?.(e.target.value)}
-              className={`bg-slate-50 dark:bg-slate-900 ${
-                username && !/^[a-z0-9_-]+$/.test(username) ? "border-red-500" : ""
-              }`}
-            />
-            {username && !/^[a-z0-9_-]+$/.test(username) && (
-              <p className="text-xs text-red-600 dark:text-red-400">
-                ⚠️ Use apenas letras minúsculas, números, hífens e underscores
-              </p>
-            )}
-            {username && /^[a-z0-9_-]+$/.test(username) && (
-              <p className="text-xs text-green-600 dark:text-green-400">✓ Nome de usuário válido</p>
-            )}
-            <p className="text-xs text-muted-foreground">
-              Será o nome de login do seu sistema. Use apenas letras minúsculas, números, hífens e underscores.
-            </p>
-          </div>
-
-          {/* Password */}
-          <div className="space-y-2">
-            <Label htmlFor="password" className="font-medium">
-              Senha
-            </Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Digite uma senha segura"
-              value={password}
-              onChange={(e) => onPasswordChange?.(e.target.value)}
-              onFocus={() => setShowPasswordValidation(true)}
-              className="bg-slate-50 dark:bg-slate-900"
-            />
-
-            {/* Password Strength Indicator */}
-            {password && (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full transition-all ${
-                        passwordStrength === "weak"
-                          ? "w-1/3 bg-red-500"
-                          : passwordStrength === "medium"
-                            ? "w-2/3 bg-yellow-500"
-                            : "w-full bg-green-500"
-                      }`}
-                    />
-                  </div>
-                  <Badge
-                    variant={
-                      passwordStrength === "weak"
-                        ? "destructive"
-                        : passwordStrength === "medium"
-                          ? "secondary"
-                          : "default"
-                    }
-                    className="text-xs"
-                  >
-                    {passwordStrength === "weak"
-                      ? "Fraca"
-                      : passwordStrength === "medium"
-                        ? "Média"
-                        : "Forte"}
-                  </Badge>
-                </div>
-                <div className="text-xs text-muted-foreground space-y-1">
-                  <p>🔐 Recomendações para senha forte:</p>
-                  <ul className="list-disc list-inside space-y-0.5 ml-1">
-                    <li>Mínimo 12 caracteres</li>
-                    <li>Pelo menos 1 letra maiúscula (A-Z)</li>
-                    <li>Pelo menos 1 letra minúscula (a-z)</li>
-                    <li>Pelo menos 1 número (0-9)</li>
-                    <li>Pelo menos 1 símbolo (!@#$%^&*)</li>
-                  </ul>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Confirm Password */}
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword" className="font-medium">
-              Confirmar Senha
-            </Label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              placeholder="Confirme a senha"
-              value={confirmPassword}
-              onChange={(e) => onConfirmPasswordChange?.(e.target.value)}
-              className={`bg-slate-50 dark:bg-slate-900 ${
-                confirmPassword && !passwordsMatch ? "border-red-500" : ""
-              }`}
-            />
-            {confirmPassword && !passwordsMatch && (
-              <p className="text-xs text-red-600 dark:text-red-400">As senhas não correspondem</p>
-            )}
-            {confirmPassword && passwordsMatch && (
-              <p className="text-xs text-green-600 dark:text-green-400">✓ Senhas correspondem</p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Seção de Partições Opcionais */}
       <Card className="border-0 shadow-sm">
         <CardHeader className="pb-3">

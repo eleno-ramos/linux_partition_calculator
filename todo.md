@@ -184,3 +184,9 @@
 - [x] Implementar validacao de espaco em disco com deteccao de conflitos
 - [x] Criar testes unitarios para AdvancedSettingsPanel (16 testes)
 - [x] Executar testes completos (40 testes passando)
+
+## Ajuste: Mover Usuário/Senha para Aba Exportar (Current Session)
+- [x] Remover campos de usuário/senha do AdvancedSettingsPanel
+- [x] Criar novo componente ExportSettings com usuário/senha
+- [x] Integrar ExportSettings na aba Exportar
+- [x] Testar e validar (40 testes passando)
