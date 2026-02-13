@@ -105,6 +105,14 @@ export default function AdvancedSettingsPanel({
   const totalPartitionSize = optionalPartitions
     .filter((p) => p.enabled)
     .reduce((sum, p) => sum + p.recommendedSize, 0);
+  
+  const totalDiskSpace = 500;
+  const systemPartitionSize = 50;
+  const availableForOptional = totalDiskSpace - systemPartitionSize;
+  const hasSpaceConflict = totalPartitionSize > availableForOptional;
+  const spaceWarningMessage = hasSpaceConflict 
+    ? `Espaco insuficiente! Particoes opcionais (${totalPartitionSize}GB) excedem o disponivel (${availableForOptional}GB)`
+    : `Espaco disponivel: ${availableForOptional - totalPartitionSize}GB`;
 
   return (
     <div className="space-y-6">
@@ -360,10 +368,26 @@ export default function AdvancedSettingsPanel({
             </div>
           ))}
 
-          {/* Resumo de Espaço */}
-          <div className="p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900 rounded-lg">
-            <p className="text-xs text-blue-700 dark:text-blue-400 font-medium">
-              💡 Espaço total das partições ativas: <span className="font-bold">{totalPartitionSize}GB</span>
+          {/* Resumo de Espaco com Validacao */}
+          <div className={`p-3 rounded-lg border ${
+            hasSpaceConflict
+              ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900'
+              : 'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900'
+          }`}>
+            <p className={`text-xs font-medium ${
+              hasSpaceConflict
+                ? 'text-red-700 dark:text-red-400'
+                : 'text-blue-700 dark:text-blue-400'
+            }`}>
+              {hasSpaceConflict ? 'Aviso: ' : 'Info: '}
+              Espaco total das particoes ativas: <span className="font-bold">{totalPartitionSize}GB</span>
+            </p>
+            <p className={`text-xs mt-1 ${
+              hasSpaceConflict
+                ? 'text-red-600 dark:text-red-400'
+                : 'text-blue-600 dark:text-blue-400'
+            }`}>
+              {spaceWarningMessage}
             </p>
           </div>
         </CardContent>

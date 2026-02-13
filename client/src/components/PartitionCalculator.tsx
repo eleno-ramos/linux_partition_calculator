@@ -144,7 +144,7 @@ export default function PartitionCalculator() {
   const performanceTips = getPerformanceTips(selectedDiskType, selectedDistro);
 
   const handleDownloadXML = () => {
-    const xml = generateKickstartXML(selectedDistro, partitions, hostname, timezone);
+    const xml = generateKickstartXML(selectedDistro, partitions, hostname, timezone, selectedFirmware as FirmwareType, username, password);
     const element = document.createElement("a");
     element.setAttribute(
       "href",
@@ -175,7 +175,7 @@ export default function PartitionCalculator() {
   };
 
   const handleCopyXML = async () => {
-    const xml = generateKickstartXML(selectedDistro, partitions, hostname, timezone);
+    const xml = generateKickstartXML(selectedDistro, partitions, hostname, timezone, selectedFirmware as FirmwareType, username, password);
     try {
       await navigator.clipboard.writeText(xml);
       toast.success("XML copiado para a área de transferência!");
@@ -190,7 +190,9 @@ export default function PartitionCalculator() {
       partitions,
       hostname,
       timezone,
-      selectedFirmware as FirmwareType
+      selectedFirmware as FirmwareType,
+      username,
+      password
     );
     const element = document.createElement("a");
     element.setAttribute(
@@ -211,7 +213,9 @@ export default function PartitionCalculator() {
       partitions,
       hostname,
       timezone,
-      selectedFirmware as FirmwareType
+      selectedFirmware as FirmwareType,
+      username,
+      password
     );
     try {
       await navigator.clipboard.writeText(preseed);
